@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>itoオンライン</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  --green-dark: #1a4731;
+  --green-mid: #2d7a50;
+  --green-light: #4caf80;
+  --green-pale: #e8f5ee;
+  --green-accent: #00c96e;
+  --white: #ffffff;
+  --gray-light: #f0f7f3;
+  --gray-mid: #b0c8bc;
+  --gray-dark: #4a6358;
+  --red: #e74c3c;
+  --gold: #f0c040;
+  --shadow: 0 4px 20px rgba(0,0,0,0.12);
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--green-pale);
+  min-height: 100vh;
+  color: var(--green-dark);
+}
+
+.screen { display: none !important; }
+.screen.active { display: block !important; }
+#titleScreen.active { display: flex !important; }
+#werewolfResultScreen.active { display: flex !important; }
+
+h1 {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-weight: 900;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--green-mid), var(--green-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--green-mid);
+  color: white;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+button:hover { background: var(--green-dark); transform: translateY(-1px); }
+button:disabled { background: var(--gray-mid); cursor: not-allowed; transform: none; }
+button.danger { background: var(--red); }
+button.danger:hover { background: #c0392b; }
+button.ghost { background: transparent; border: 2px solid var(--green-mid); color: var(--green-mid); }
+button.ghost:hover { background: var(--green-pale); }
+
+input, select, textarea {
+  padding: 10px 14px;
+  border: 2px solid var(--gray-mid);
+  border-radius: var(--radius);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  background: white;
+  color: var(--green-dark);
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
+
+.card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+
+/* タイトル */
+#titleScreen {
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+#waitingOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+#waitingOverlay.show { display: flex; }
+
+.title-logo {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-weight: 900;
+  font-size: 96px;
+  letter-spacing: 8px;
+  background: linear-gradient(135deg, var(--green-dark), var(--green-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+.title-sub { color: var(--gray-dark); font-size: 13px; letter-spacing: 3px; margin-bottom: 40px; }
+.mode-buttons { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
+.mode-btn { padding: 16px 32px; font-size: 16px; border-radius: 50px; min-width: 180px; }
+.mode-btn.selected { background: var(--green-dark); box-shadow: 0 0 0 3px var(--green-accent); }
+.setup-card { background: white; border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); width: 100%; max-width: 480px; text-align: left; }
+.setup-card h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; color: var(--green-dark); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--green-pale); }
+.form-row { margin-bottom: 16px; }
+.form-row label { display: block; font-size: 13px; color: var(--gray-dark); margin-bottom: 6px; font-weight: 700; }
+.form-row input, .form-row select { width: 100%; }
+.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.radio-group input[type="radio"] { display: none; }
+.radio-group label { padding: 8px 16px; border: 2px solid var(--green-mid); border-radius: 50px; color: var(--green-mid); cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s; }
+.radio-group input[type="radio"]:checked + label { background: var(--green-mid); color: white; }
+.start-btn { width: 100%; padding: 14px; font-size: 16px; border-radius: 50px; margin-top: 8px; background: linear-gradient(135deg, var(--green-mid), var(--green-accent)); }
+
+/* 待機 */
+.waiting-card { background: white; border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); max-width: 480px; width: 100%; }
+.waiting-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; color: var(--green-dark); margin-bottom: 20px; }
+.room-key-display { background: var(--green-pale); border: 2px dashed var(--green-mid); border-radius: var(--radius); padding: 16px; font-size: 28px; font-weight: 900; color: var(--green-dark); letter-spacing: 4px; margin-bottom: 20px; }
+.player-list { list-style: none; margin-bottom: 20px; }
+.player-list li { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--green-pale); border-radius: 8px; margin-bottom: 8px; font-weight: 700; }
+.player-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green-accent); }
+
+/* ゲーム画面 */
+#gameScreen { padding: 16px; max-width: 1000px; margin: 0 auto; }
+#gameScreen.active { display: block !important; }
+.game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.game-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 28px; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.game-info-bar { display: flex; gap: 12px; flex-wrap: wrap; }
+.badge { padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; background: var(--green-pale); color: var(--green-dark); border: 1px solid var(--green-mid); }
+.game-layout { display: grid; grid-template-columns: 1fr 260px; gap: 16px; }
+@media (max-width: 700px) { .game-layout { grid-template-columns: 1fr; } }
+.game-main { display: flex; flex-direction: column; gap: 16px; }
+.theme-card { background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); color: white; border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); }
+.theme-label { font-size: 12px; opacity: 0.7; letter-spacing: 2px; margin-bottom: 6px; }
+.theme-text { font-family: 'Zen Maru Gothic', sans-serif; font-size: 28px; font-weight: 900; letter-spacing: 2px; }
+.my-info-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.my-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 56px; font-weight: 900; color: var(--green-accent); line-height: 1; }
+.my-info-details { flex: 1; }
+.my-role { font-size: 13px; color: var(--gray-dark); margin-bottom: 4px; }
+.my-role span { font-weight: 700; color: var(--green-dark); }
+.my-role span.werewolf { color: var(--red); }
+.all-numbers { font-size: 12px; color: var(--gray-dark); }
+.all-numbers-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.all-numbers-item { background: #ffeaea; border: 1px solid var(--red); border-radius: 6px; padding: 3px 8px; font-size: 12px; color: var(--red); font-weight: 700; }
+.hint-input-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+.hint-input-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 10px; font-weight: 700; }
+.hint-input-row { display: flex; gap: 8px; }
+.hint-input-row input { flex: 1; }
+.answers-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+.answers-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 12px; font-weight: 700; }
+.answers-table { width: 100%; border-collapse: collapse; }
+.answers-table th { font-size: 12px; color: var(--gray-dark); padding: 6px 10px; text-align: left; border-bottom: 2px solid var(--green-pale); }
+.answers-table td { padding: 8px 10px; font-size: 15px; font-weight: 700; border-bottom: 1px solid var(--green-pale); }
+.hint-pending { color: var(--gray-mid); font-style: italic; font-weight: 400; font-size: 13px; }
+.vote-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+.vote-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 12px; font-weight: 700; }
+.vote-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.vote-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 50px; }
+.vote-row select { flex: 1; }
+.vote-confirmed { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 12px; background: var(--green-pale); border-radius: 8px; }
+.vote-confirmed-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 50px; }
+.vote-confirmed-name { font-weight: 700; color: var(--green-mid); flex: 1; }
+.vote-confirmed-check { color: var(--green-accent); font-size: 18px; }
+.chat-panel { display: flex; flex-direction: column; }
+.chat-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; height: 500px; }
+.chat-title { padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--gray-dark); border-bottom: 1px solid var(--green-pale); }
+.chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.chat-msg { max-width: 85%; padding: 7px 12px; border-radius: 12px; font-size: 13px; word-break: break-all; }
+.chat-msg.mine { align-self: flex-end; background: #dcf8e6; }
+.chat-msg.theirs { align-self: flex-start; background: var(--green-pale); border: 1px solid var(--gray-mid); }
+.chat-msg .sender { font-size: 11px; color: var(--gray-dark); margin-bottom: 2px; font-weight: 700; }
+.chat-input-row { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--green-pale); }
+.chat-input-row input { flex: 1; font-size: 13px; }
+.chat-input-row button { padding: 8px 12px; font-size: 13px; }
+.phase-banner { background: linear-gradient(135deg, var(--green-mid), var(--green-accent)); color: white; border-radius: var(--radius); padding: 12px 20px; text-align: center; font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+
+/* リザルト */
+#resultScreen { padding: 20px; max-width: 700px; margin: 0 auto; }
+#resultScreen.active { display: block !important; }
+.result-header { text-align: center; margin-bottom: 24px; }
+.result-label { font-size: 14px; color: var(--gray-dark); letter-spacing: 2px; margin-bottom: 8px; }
+.result-status { font-family: 'Zen Maru Gothic', sans-serif; font-size: 48px; font-weight: 900; }
+.result-status.success { color: var(--green-accent); }
+.result-status.fail { color: var(--red); }
+.result-order { background: white; border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
+.result-order-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 14px; font-weight: 700; }
+.result-order-list { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.result-order-item { display: flex; flex-direction: column; align-items: center; background: var(--green-pale); border: 2px solid var(--green-mid); border-radius: var(--radius); padding: 10px 16px; min-width: 80px; }
+.result-order-item.wrong { background: #ffeaea; border-color: var(--red); }
+.result-order-hint { font-size: 18px; font-weight: 700; color: var(--green-dark); }
+.result-order-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; color: var(--green-accent); }
+.result-order-name { font-size: 11px; color: var(--gray-dark); }
+.result-arrow { font-size: 20px; color: var(--gray-mid); }
+.result-buttons { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.result-buttons button { flex: 1; min-width: 140px; padding: 12px; }
+
+/* 人狼投票 */
+#werewolfVoteScreen { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
+#werewolfVoteScreen.active { display: block !important; }
+.wv-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; color: var(--red); margin-bottom: 8px; }
+.wv-sub { color: var(--gray-dark); font-size: 14px; margin-bottom: 24px; }
+.wv-player-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.wv-player-btn { padding: 16px; border-radius: var(--radius); background: white; border: 2px solid var(--gray-mid); color: var(--green-dark); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
+.wv-player-btn:hover { border-color: var(--red); background: #ffeaea; color: var(--red); }
+.wv-player-btn.selected { border-color: var(--red); background: var(--red); color: white; }
+.wv-submit-btn { width: 100%; padding: 14px; font-size: 16px; border-radius: 50px; background: var(--red); }
+.wv-submit-btn:hover { background: #c0392b; }
+.wv-waiting { color: var(--gray-dark); font-size: 14px; margin-top: 16px; }
+
+/* 人狼勝敗 */
+#werewolfResultScreen { min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+.wr-bg-village { background: linear-gradient(160deg, var(--green-pale) 0%, #c8f0da 100%); }
+.wr-bg-wolf { background: linear-gradient(160deg, #1a0a0a 0%, #3d0f0f 100%); }
+.wr-winner { font-family: 'Zen Maru Gothic', sans-serif; font-size: 48px; font-weight: 900; margin-bottom: 8px; }
+.wr-winner.village { color: var(--green-accent); }
+.wr-winner.wolf { color: #ff6b6b; }
+.wr-sub { font-size: 16px; margin-bottom: 32px; }
+.wr-reveal-card { background: white; border-radius: var(--radius); padding: 24px 32px; box-shadow: var(--shadow); margin-bottom: 24px; min-width: 280px; }
+.wr-reveal-label { font-size: 13px; color: var(--gray-dark); margin-bottom: 8px; }
+.wr-werewolf-name { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; color: var(--red); }
+.wr-vote-result { font-size: 14px; color: var(--gray-dark); margin-top: 8px; }
+.wr-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.wr-buttons button { min-width: 160px; padding: 12px 24px; font-size: 15px; }
+
+/* 人狼投票専用画面 */
+#werewolfVoteOnlyScreen { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
+#werewolfVoteOnlyScreen.active { display: block !important; }
+
+/* オーバーレイ */
+#overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+#overlay.show { display: flex; }
+.overlay-box { background: white; border-radius: var(--radius); padding: 32px; text-align: center; min-width: 280px; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.3); }
+.overlay-box p { font-size: 18px; font-weight: 700; color: var(--green-dark); margin-bottom: 20px; }
+.overlay-box button { min-width: 120px; }
+</style>
+</head>
+<body>
+
+<!-- タイトル画面 -->
+<div id="titleScreen" class="screen active">
+  <div class="title-logo">itoオンライン</div>
+  <p class="title-sub">iTO ONLINE GAME</p>
+  <div class="mode-buttons">
+<button class="mode-btn ghost" id="modeBtnIto" onclick="selectMode('ito')">通常ito</button>
+    <button class="mode-btn ghost" id="modeBtnWerewolf" onclick="selectMode('werewolf')">ito人狼</button>
+  </div>
+  <div class="setup-card" id="setupCard" style="display:none;">
+    <h3>部屋の設定</h3>
+    <div class="form-row">
+      <label>あなたの名前</label>
+      <input id="playerName" placeholder="名前を入力" maxlength="10">
+    </div>
+    <div class="form-row">
+      <label>部屋の操作</label>
+      <div class="radio-group">
+        <input type="radio" name="roomAction" id="radioCreate" value="create" >
+        <label for="radioCreate" onclick="toggleRoomAction('create')">部屋を作る</label>
+        <input type="radio" name="roomAction" id="radioJoin" value="join">
+        <label for="radioJoin" onclick="toggleRoomAction('join')">部屋に入る</label>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>合言葉</label>
+      <input id="roomKeyInput" placeholder="合言葉を入力">
+    </div>
+    <div id="createSettings">
+      <div class="form-row" id="werewolfGameCountRow" style="display:none;">
+        <label>ゲーム数（人狼投票まで）</label>
+        <div class="radio-group">
+          <input type="radio" name="gameCount" id="gc1" value="1"><label for="gc1">1回</label>
+          <input type="radio" name="gameCount" id="gc2" value="2"><label for="gc2">2回</label>
+          <input type="radio" name="gameCount" id="gc3" value="3"><label for="gc3">3回</label>
+          <input type="radio" name="gameCount" id="gc4" value="4"><label for="gc4">4回</label>
+          <input type="radio" name="gameCount" id="gc5" value="5"><label for="gc5">5回</label>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="startRoom()">スタート</button>
+  </div>
+</div>
+
+<!-- 待機オーバーレイ -->
+<div id="waitingOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center;">
+  <div class="waiting-card">
+    <div class="waiting-title" id="waitingTitle">参加者を待っています...</div>
+    <div class="room-key-display" id="roomKeyDisplay"></div>
+    <p style="font-size:13px; color:var(--gray-dark); margin-bottom:16px;">この合言葉を参加者に伝えてください</p>
+    <ul class="player-list" id="playerListWaiting"></ul>
+    <button id="startGameBtn" style="display:none; width:100%;" onclick="hostStartGame()">ゲーム開始</button>
+    <button class="ghost" style="width:100%; margin-top:8px;" onclick="leaveRoom()">退出する</button>
+  </div>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="gameScreen" class="screen">
+  <div class="game-header">
+    <div class="game-title">ito</div>
+    <div class="game-info-bar">
+      <div class="badge" id="gameCountBadge"></div>
+      <div class="badge" id="phaseBadge"></div>
+    </div>
+  </div>
+  <div class="phase-banner" id="phaseBanner">ヒント入力フェーズ</div>
+  <div class="game-layout">
+    <div class="game-main">
+      <div class="theme-card">
+        <div class="theme-label">お題</div>
+        <div class="theme-text" id="themeText">-</div>
+      </div>
+      <div class="my-info-card">
+        <div class="my-number" id="myNumber">-</div>
+        <div class="my-info-details">
+          <div class="my-role" id="myRoleRow">あなたの役職：<span id="myRole">村人</span></div>
+          <div class="my-role" style="margin-top:4px;">あなたの数字：<span style="font-weight:700; color:var(--green-accent);" id="myNumberSmall">-</span></div>
+          <div id="werewolfAllNumbers" style="display:none;">
+            <div class="all-numbers">みんなの数字：</div>
+            <div class="all-numbers-list" id="allNumbersList"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint-input-card" id="hintInputCard">
+        <div class="hint-input-title">あなたのヒントを入力してください</div>
+        <div class="hint-input-row">
+          <input id="hintInput" placeholder="ヒントを入力（例：ゴリラ）" maxlength="20">
+          <button onclick="submitHint()">送信</button>
+        </div>
+      </div>
+      <div class="answers-card">
+        <div class="answers-title">みんなの回答</div>
+        <table class="answers-table">
+          <thead><tr id="answersHeader"></tr></thead>
+          <tbody><tr id="answersRow"></tr></tbody>
+        </table>
+      </div>
+      <!-- 話し合い情報 -->
+      <div id="discussInfo" style="display:none; background:white; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow);">
+        <div style="font-size:13px; color:var(--gray-dark); font-weight:700; margin-bottom:8px;">話し合いフェーズ</div>
+        <div style="font-size:13px; color:var(--gray-dark); margin-bottom:8px;">投票は話し合い終了後に開始されます</div>
+        <div id="discussTimerDisplay" style="font-family:'Zen Maru Gothic',sans-serif; font-size:28px; font-weight:900; color:var(--green-accent); margin-bottom:12px;">1:30</div>
+        <button id="discussEndBtn" style="display:none; background:var(--red);" onclick="hostEndDiscuss()">話し合いを終了する</button>
+      </div>
+      <!-- 並び替え投票 -->
+      <div class="vote-card" id="voteCard" style="display:none;">
+        <div class="vote-title">並び替え投票（低い順に選んでください）</div>
+        <div id="voteRows"></div>
+        <div id="voteWaiting" style="display:none; color:var(--gray-dark); font-size:13px; padding:8px 0;"></div>
+      </div>
+      <!-- 同数解決UI -->
+      <div id="tiebreakCard" style="display:none; background:white; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow);">
+        <div style="font-size:13px; font-weight:700; color:var(--red); margin-bottom:8px;">⚠️ 同数が発生しました</div>
+        <div id="tiebreakInfo" style="font-size:13px; color:var(--gray-dark); margin-bottom:12px;"></div>
+        <div id="tiebreakSelects"></div>
+        <button id="tiebreakConfirmBtn" style="display:none; margin-top:12px; width:100%;" onclick="confirmTiebreak()">この順番で確定する</button>
+        <div id="tiebreakWaiting" style="display:none; font-size:13px; color:var(--gray-dark); margin-top:8px;">ホストが順番を決定中です...</div>
+      </div>
+    </div>
+    <!-- チャット -->
+    <div class="chat-panel">
+      <div class="chat-card">
+        <div class="chat-title">チャット</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="メッセージ" maxlength="50">
+          <button onclick="sendChat()">送信</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- リザルト画面 -->
+<div id="resultScreen" class="screen">
+  <div class="result-header">
+    <div class="result-label">結果</div>
+    <div class="result-status" id="resultStatus">成功</div>
+  </div>
+  <div class="result-order card">
+    <div class="result-order-title">並び順と数字</div>
+    <div class="result-order-list" id="resultOrderList"></div>
+  </div>
+  <div class="result-buttons">
+    <button id="nextGameBtn" onclick="goNextGame()">次のゲームへ</button>
+    <button id="werewolfVoteBtn" class="danger" style="display:none;" onclick="goWerewolfVote()">人狼投票をする</button>
+    <button id="backToTitleBtn" class="ghost" onclick="backToTitle()">タイトルへ戻る</button>
+  </div>
+</div>
+
+<!-- 人狼投票・話し合い画面 -->
+<div id="werewolfVoteScreen" class="screen">
+  <div style="max-width:900px; margin:0 auto; padding:20px;">
+    <div class="wv-title">人狼投票</div>
+    <div class="wv-sub">これまでのヒントを振り返って話し合い、人狼を投票してください</div>
+
+    <div style="display:grid; grid-template-columns:1fr 260px; gap:16px;">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- 話し合いタイマー -->
+        <div id="wvDiscussInfo" style="background:white; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow);">
+          <div style="font-size:13px; color:var(--gray-dark); font-weight:700; margin-bottom:8px;">話し合いフェーズ</div>
+          <div style="font-size:13px; color:var(--gray-dark); margin-bottom:8px;">話し合い終了後に投票が開始されます</div>
+          <div id="wvTimerDisplay" style="font-family:'Zen Maru Gothic',sans-serif; font-size:28px; font-weight:900; color:var(--green-accent); margin-bottom:12px;">1:30</div>
+          <button id="wvDiscussEndBtn" style="display:none; background:var(--red);" onclick="hostEndWvDiscuss()">話し合いを終了する</button>
+        </div>
+
+        <!-- 履歴（ページング） -->
+        <div style="background:white; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow);">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+            <div style="font-size:13px; font-weight:700; color:var(--gray-dark);">各ゲームの履歴</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button id="wvHistoryPrev" onclick="changeHistoryPage(-1)" style="padding:4px 10px; font-size:13px; border-radius:8px;">&lt;</button>
+              <span id="wvHistoryPageLabel" style="font-size:13px; color:var(--gray-dark); font-weight:700;"></span>
+              <button id="wvHistoryNext" onclick="changeHistoryPage(1)" style="padding:4px 10px; font-size:13px; border-radius:8px;">&gt;</button>
+            </div>
+          </div>
+          <div id="wvHistory"></div>
+        </div>
+
+      </div>
+
+      <!-- チャット -->
+      <div class="chat-panel">
+        <div class="chat-card">
+          <div class="chat-title">チャット</div>
+          <div class="chat-messages" id="wvChatMessages"></div>
+          <div class="chat-input-row">
+            <input id="wvChatInput" placeholder="メッセージ" maxlength="50">
+            <button onclick="sendWvChat()">送信</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 人狼投票専用画面 -->
+<div id="werewolfVoteOnlyScreen" class="screen">
+  <div style="max-width:600px; margin:0 auto; padding:20px; text-align:center;">
+    <div class="wv-title">人狼投票</div>
+    <div class="wv-sub">これまでの話し合いをもとに、人狼だと思う人に投票してください</div>
+    <div style="background:white; border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); margin-bottom:16px;">
+      <div class="wv-player-list" id="wvPlayerList"></div>
+      <button class="wv-submit-btn" id="wvSubmitBtn" onclick="submitWerewolfVote()" disabled>投票する</button>
+      <div class="wv-waiting" id="wvWaiting"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 人狼勝敗画面 -->
+<div id="werewolfResultScreen" class="screen">
+  <div class="wr-winner" id="wrWinner">村人の勝利！</div>
+  <div class="wr-sub" id="wrSub">人狼を見破りました！</div>
+  <div class="wr-reveal-card">
+    <div class="wr-reveal-label">人狼は...</div>
+    <div class="wr-werewolf-name" id="wrWerewolfName">-</div>
+    <div class="wr-vote-result" id="wrVoteResult"></div>
+  </div>
+  <div class="wr-buttons">
+    <button onclick="playAgain()">もう一度遊ぶ</button>
+    <button class="ghost" onclick="backToTitle()">タイトルへ戻る</button>
+  </div>
+</div>
+
+<!-- オーバーレイ -->
+<div id="overlay">
+  <div class="overlay-box">
+    <p id="overlayMsg">待機中...</p>
+    <button id="overlayBtn" style="display:none;" onclick="hideOverlay()">OK</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, update, remove, push, onDisconnect } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyAp14vmxoLdh4WwD9kKMnmTaLZBAMNC2L8",
+  authDomain: "shiritori-game-4898f.firebaseapp.com",
+  databaseURL: "https://shiritori-game-4898f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "shiritori-game-4898f",
+  storageBucket: "shiritori-game-4898f.firebasestorage.app",
+  messagingSenderId: "962873120214",
+  appId: "1:962873120214:web:bd54dda254c926cdb78077"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._db = db; window._ref = ref; window._set = set; window._get = get;
+window._onValue = onValue; window._update = update; window._remove = remove;
+window._push = push; window._onDisconnect = onDisconnect;
+</script>
+
+<script>
+const THEMES = [
+  "強そうな動物","人気な野菜","子供がなりたい職業","かっこいい名前の偉人",
+  "小学生が好きな言葉","速い物","かわいい動物","ほしい特殊能力",
+  "朝ごはんに食べたいもの","白米に合う食べ物","無人島に持っていきたいもの","家に一つ欲しいもの","家の中でしたいこと","学校帰りに食べたいもの","言われたいセリフ","楽しいイベント","大切にしたいもの","褒められる行動","よく使う英単語","外国人におすすめしたい日本の文化","許せない他人の行動","ほしいドラえもんの秘密道具","ガリガリ君にあったら美味しそうな味","生まれ変わったらなりたい人物","人生の最後に食べたいもの","現実にいてほしいアニメのキャラクター","明るいもの","万能なもの","友達が自慢していたら羨ましいもの","怖いもの","誕生日にもらったら嬉しいもの","なくなってほしくないアプリ","人気な海の動物","100円になったら嬉しいもの","健康に悪そうなもの","身につけたい特技","友達になりたい人・有名人"
+];
+let usedThemes = [];
+function getRandomTheme() {
+  const remaining = THEMES.filter(t => !usedThemes.includes(t));
+  if (remaining.length === 0) usedThemes = [];
+  const theme = remaining[Math.floor(Math.random() * remaining.length)];
+  usedThemes.push(theme);
+  return theme;
+}  
+  
+  
+
+let currentMode = 'ito';
+let myName = '', roomKey = '', myId = '';
+let isHost = false;
+let players = {};
+let myNumber = 0, myRole = 'villager';
+let currentTheme = '', totalGameCount = 2, currentGameNumber = 1;
+let roomUnsubscribe = null, werewolfVoteTarget = null;
+let myVoteArray = [];
+let discussTimerInterval = null;
+let wvTimerInterval = null;
+let wvHistoryPage = 0;
+let wvHistoryData = [];
+let joinAlertShown = false;
+let lastRoomKey = '';  
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('waitingOverlay').style.display = 'none';
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
+
+function selectMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeBtnIto').className = mode === 'ito' ? 'mode-btn selected' : 'mode-btn ghost';
+  document.getElementById('modeBtnWerewolf').className = mode === 'werewolf' ? 'mode-btn selected' : 'mode-btn ghost';
+  document.getElementById('werewolfGameCountRow').style.display = mode === 'werewolf' ? 'block' : 'none';
+  document.getElementById('setupCard').style.display = 'block';
+}
+  
+function toggleRoomAction(action) {
+  document.getElementById('createSettings').style.display = action === 'create' ? 'block' : 'none';
+}
+
+function startRoom() {
+  if (!window._db) { alert('初期化中です'); return; }
+  joinAlertShown = false;
+  myName = document.getElementById('playerName').value.trim();
+  if (!myName) { alert('名前を入力してください'); return; }
+  roomKey = document.getElementById('roomKeyInput').value.trim();
+  if (!roomKey) { alert('合言葉を入力してください'); return; }
+  myId = myName + '_' + Date.now();
+  const action = document.querySelector('input[name="roomAction"]:checked').value;
+  if (action === 'create') createRoom(); else joinRoom();
+}
+
+function createRoom() {
+  isHost = true;
+  totalGameCount = parseInt(document.querySelector('input[name="gameCount"]:checked')?.value || 2);
+  window._set(window._ref(window._db, `ito_rooms/${roomKey}`), {
+    mode: currentMode, totalGameCount, currentGameNumber: 1, phase: 'waiting',
+    host: myId, players: { [myId]: { name: myName } },
+    theme: '', numbers: {}, werewolf: '', hints: {}, votes: {},
+    werewolfVotes: {}, chat: {}, gameResults: {}
+  });
+  showWaitingScreen(); listenToRoom();
+}
+
+function joinRoom() {
+  isHost = false;
+  window._get(window._ref(window._db, `ito_rooms/${roomKey}`)).then(snap => {
+    if (!snap.exists()) { alert('部屋が見つかりません'); return; }
+    const data = snap.val();
+    if (data.phase !== 'waiting') { alert('すでにゲームが始まっています'); return; }
+    currentMode = data.mode; totalGameCount = data.totalGameCount;
+    window._update(window._ref(window._db, `ito_rooms/${roomKey}/players`), { [myId]: { name: myName } });
+    showWaitingScreen(); listenToRoom();
+  });
+}
+
+function showWaitingScreen() {
+  document.getElementById('roomKeyDisplay').textContent = roomKey;
+  document.getElementById('waitingTitle').textContent = isHost ? '参加者を待っています...' : 'ホストの開始を待っています...';
+  document.getElementById('startGameBtn').style.display = isHost ? 'inline-block' : 'none';
+  document.getElementById('waitingOverlay').style.display = 'flex';
+}
+
+function leaveRoom() {
+  if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+  window._remove(window._ref(window._db, `ito_rooms/${roomKey}/players/${myId}`));
+  showScreen('titleScreen');
+}
+
+function hostStartGame() {
+  const playerCount = Object.keys(players).length;
+  if (currentMode === 'werewolf' && playerCount < 3) { alert('ito人狼は3人以上必要です'); return; }
+  if (playerCount < 2) { alert('2人以上必要です'); return; }
+  const tgc = currentMode === 'ito' ? 999 : totalGameCount;
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+    phase: 'hint',
+    theme: getRandomTheme(),
+    numbers: assignNumbers(Object.keys(players)),
+    werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
+    playerOrder: shuffleArray(Object.keys(players)),
+    hints: {}, votes: {}, currentGameNumber: 1, totalGameCount: tgc
+  });
+}
+
+function assignNumbers(ids) {
+  const nums = {}; const pool = generateUniqueNumbers(ids.length);
+  ids.forEach((id, i) => { nums[id] = pool[i]; }); return nums;
+}
+function generateUniqueNumbers(count) {
+  const nums = new Set();
+  while (nums.size < count) nums.add(Math.floor(Math.random() * 100) + 1);
+  return shuffleArray([...nums]);
+}
+function assignWerewolf(ids) { return ids[Math.floor(Math.random() * ids.length)]; }
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function updateGameScreen(data) {
+  players = data.players || {};
+  currentTheme = data.theme || '';
+  currentGameNumber = data.currentGameNumber || 1;
+  totalGameCount = data.totalGameCount || 2;
+
+  document.getElementById('themeText').textContent = currentTheme;
+  document.getElementById('gameCountBadge').textContent = currentMode === 'ito'
+    ? `ゲーム ${currentGameNumber}`
+    : `${currentGameNumber} / ${totalGameCount} ゲーム`;
+
+  myNumber = data.numbers?.[myId] || 0;
+  myRole = (currentMode === 'werewolf' && data.werewolf === myId) ? 'werewolf' : 'villager';
+  document.getElementById('myNumber').textContent = myNumber;
+  document.getElementById('myNumberSmall').textContent = myNumber;
+
+  if (currentMode === 'werewolf') {
+    document.getElementById('myRoleRow').style.display = 'block';
+    document.getElementById('myRole').textContent = myRole === 'werewolf' ? '人狼' : '村人';
+    document.getElementById('myRole').className = myRole === 'werewolf' ? 'werewolf' : '';
+  } else {
+    document.getElementById('myRoleRow').style.display = 'none';
+  }
+
+  if (myRole === 'werewolf' && data.numbers) {
+    document.getElementById('werewolfAllNumbers').style.display = 'block';
+    const list = document.getElementById('allNumbersList');
+    list.innerHTML = '';
+    Object.entries(data.numbers).forEach(([id, num]) => {
+      if (id !== myId) {
+        const item = document.createElement('div');
+        item.className = 'all-numbers-item';
+        item.textContent = `${players[id]?.name || id}：${num}`;
+        list.appendChild(item);
+      }
+    });
+  } else {
+    document.getElementById('werewolfAllNumbers').style.display = 'none';
+  }
+
+  updatePhaseUI(data);
+  updateAnswersTable(data);
+  if (data.chat) updateChat(data.chat);
+}
+
+function updatePhaseUI(data) {
+  const hints = data.hints || {};
+  const playerIds = Object.keys(players);
+
+  document.getElementById('hintInputCard').style.display = 'none';
+  document.getElementById('discussInfo').style.display = 'none';
+  document.getElementById('voteCard').style.display = 'none';
+  document.getElementById('tiebreakCard').style.display = 'none';
+
+  if (data.phase === 'hint') {
+    document.getElementById('phaseBanner').textContent = 'ヒント入力フェーズ';
+    document.getElementById('phaseBadge').textContent = `${Object.keys(hints).length} / ${playerIds.length} 人入力済み`;
+    if (!hints[myId]) document.getElementById('hintInputCard').style.display = 'block';
+  } else if (data.phase === 'discuss') {
+    document.getElementById('phaseBanner').textContent = '話し合いフェーズ';
+    document.getElementById('phaseBadge').textContent = '';
+    document.getElementById('discussInfo').style.display = 'block';
+    document.getElementById('discussEndBtn').style.display = isHost ? 'inline-block' : 'none';
+  } else if (data.phase === 'vote') {
+    document.getElementById('phaseBanner').textContent = '並び替え投票フェーズ';
+    document.getElementById('voteCard').style.display = 'block';
+    if (!data.votes?.[myId] && !document.getElementById('voteSubmitBtn')) {
+      updateVoteUI(data);
+    } else if (data.votes?.[myId]) {
+      updateVoteUI(data);
+    }
+  } else if (data.phase === 'tiebreak_discuss') {
+    document.getElementById('phaseBanner').textContent = '⚠️ 同数発生 - 再話し合い';
+    document.getElementById('phaseBadge').textContent = 'ホストが決定します';
+    document.getElementById('tiebreakCard').style.display = 'block';
+    showTiebreakDiscuss(data);
+  }
+}
+
+function startDiscussTimer(startTime) {
+  if (discussTimerInterval) clearInterval(discussTimerInterval);
+  const DURATION = 90;
+  discussTimerInterval = setInterval(() => {
+    const remaining = DURATION - Math.floor((Date.now() - startTime) / 1000);
+    if (remaining <= 0) {
+      clearInterval(discussTimerInterval); discussTimerInterval = null;
+      if (isHost) window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'vote' });
+      return;
+    }
+    const m = Math.floor(remaining / 60), s = remaining % 60;
+    document.getElementById('discussTimerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+}
+
+function hostEndDiscuss() {
+  if (!isHost) return;
+  if (!confirm('話し合いを終了できるのはホストだけです。他のプレイヤーに確認を取ってください。本当に話し合いを終了して投票を開始しますか？')) return;
+  if (discussTimerInterval) { clearInterval(discussTimerInterval); discussTimerInterval = null; }
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'vote' });
+}
+
+// 人狼投票前話し合いタイマー
+function startWvDiscussTimer(startTime) {
+  if (wvTimerInterval) clearInterval(wvTimerInterval);
+  const DURATION = 90;
+  const discussInfo = document.getElementById('wvDiscussInfo');
+  const discussEndBtn = document.getElementById('wvDiscussEndBtn');
+  if (discussInfo) discussInfo.style.display = 'block';
+  if (discussEndBtn) discussEndBtn.style.display = isHost ? 'inline-block' : 'none';
+
+  wvTimerInterval = setInterval(() => {
+    const remaining = DURATION - Math.floor((Date.now() - startTime) / 1000);
+    if (remaining <= 0) {
+      clearInterval(wvTimerInterval); wvTimerInterval = null;
+      if (isHost) window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'werewolf_vote_open' });
+      return;
+    }
+    const m = Math.floor(remaining / 60), s = remaining % 60;
+    const timerDisplay = document.getElementById('wvTimerDisplay');
+    if (timerDisplay) timerDisplay.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+}
+
+function hostEndWvDiscuss() {
+  if (!isHost) return;
+  if (!confirm('話し合いを終了できるのはホストだけです。他のプレイヤーに確認を取ってください。本当に話し合いを終了して投票を開始しますか？')) return;
+  if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
+  const discussInfo = document.getElementById('wvDiscussInfo');
+  if (discussInfo) discussInfo.style.display = 'none';
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'werewolf_vote_open' });
+}
+
+function updateAnswersTable(data) {
+  const hints = data.hints || {};
+  const playerIds = data.playerOrder || Object.keys(players);
+  const header = document.getElementById('answersHeader');
+  const row = document.getElementById('answersRow');
+  header.innerHTML = ''; row.innerHTML = '';
+  playerIds.forEach(id => {
+    const th = document.createElement('th');
+    th.textContent = players[id]?.name || id;
+    header.appendChild(th);
+    const td = document.createElement('td');
+    td.textContent = hints[id] || '';
+    if (!hints[id]) td.innerHTML = '<span class="hint-pending">入力中...</span>';
+    row.appendChild(td);
+  });
+}
+
+function updateVoteUI(data) {
+  const hints = data.hints || {};
+  const playerIds = data.playerOrder || Object.keys(players);
+  const myVoteData = data.votes?.[myId];
+  const voteRows = document.getElementById('voteRows');
+  const voteWaiting = document.getElementById('voteWaiting');
+
+  if (myVoteData) {
+    voteRows.innerHTML = '';
+    playerIds.forEach((id, i) => {
+      const name = myVoteData[i] || myVoteData[String(i)];
+      const confirmedId = playerIds.find(pid => players[pid]?.name === name);
+      const hint = hints[confirmedId] || name || '-';
+      const div = document.createElement('div');
+      div.className = 'vote-confirmed';
+      div.innerHTML = `<div class="vote-confirmed-rank">${i+1}番目</div><div class="vote-confirmed-name">${hint}（${name || '-'}）</div><div class="vote-confirmed-check">✓</div>`;
+      voteRows.appendChild(div);
+    });
+    voteWaiting.style.display = 'block';
+    const votedCount = Object.keys(data.votes || {}).length;
+    voteWaiting.textContent = `投票済み（${votedCount} / ${playerIds.length} 人）`;
+  } else {
+    if (document.getElementById('voteSubmitBtn')) return;
+    voteWaiting.style.display = 'none';
+    voteRows.innerHTML = '';
+    const selects = [];
+    playerIds.forEach((id, i) => {
+      const div = document.createElement('div');
+      div.className = 'vote-row';
+      const label = document.createElement('div');
+      label.className = 'vote-rank';
+      label.textContent = `${i+1}番目 →`;
+      const select = document.createElement('select');
+      select.id = `voteSelect_${i}`;
+      const def = document.createElement('option');
+      def.value = ''; def.textContent = '回答から選択';
+      select.appendChild(def);
+      playerIds.forEach(pid => {
+        const opt = document.createElement('option');
+        opt.value = players[pid]?.name || pid;
+        opt.textContent = `${hints[pid] || '?'}（${players[pid]?.name || pid}）`;
+        select.appendChild(opt);
+      });
+      selects.push(select);
+      div.appendChild(label); div.appendChild(select);
+      voteRows.appendChild(div);
+    });
+    const submitDiv = document.createElement('div');
+    submitDiv.style.cssText = 'margin-top:12px;';
+    const submitBtn = document.createElement('button');
+    submitBtn.id = 'voteSubmitBtn';
+    submitBtn.textContent = '投票する';
+    submitBtn.style.cssText = 'width:100%; padding:12px; font-size:15px;';
+    submitBtn.onclick = () => {
+      const voteArray = selects.map(s => s.value);
+      if (voteArray.some(v => !v)) { alert('すべての順位を選択してください'); return; }
+      if (new Set(voteArray).size !== voteArray.length) { alert('同じ回答を複数の順位に投票できません'); return; }
+      const voteObj = {};
+      voteArray.forEach((v, i) => { voteObj[i] = v; });
+      window._update(window._ref(window._db, `ito_rooms/${roomKey}/votes`), { [myId]: voteObj });
+    };
+    submitDiv.appendChild(submitBtn);
+    voteRows.appendChild(submitDiv);
+  }
+}
+
+function submitHint() {
+  const hint = document.getElementById('hintInput').value.trim();
+  if (!hint) { alert('ヒントを入力してください'); return; }
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}/hints`), { [myId]: hint });
+  document.getElementById('hintInput').value = '';
+  document.getElementById('hintInputCard').style.display = 'none';
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  window._push(window._ref(window._db, `ito_rooms/${roomKey}/chat`), {
+    sender: myName, text, senderId: myId, timestamp: Date.now()
+  });
+}
+function updateChat(chatData) {
+  const messages = document.getElementById('chatMessages');
+  const entries = Object.values(chatData).sort((a, b) => a.timestamp - b.timestamp);
+  if (entries.length === messages.children.length) return;
+  messages.innerHTML = '';
+  entries.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (msg.senderId === myId ? 'mine' : 'theirs');
+    div.innerHTML = `<div class="sender">${msg.sender}</div>${msg.text}`;
+    messages.appendChild(div);
+  });
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function showResultScreen(data) {
+  const votes = data.votes || {};
+  const playerIds = data.playerOrder || Object.keys(players);
+
+  if (isHost) {
+    const tieRanks = findTieRanks(votes, playerIds);
+    if (tieRanks.length > 0) {
+      window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+        phase: 'tiebreak_discuss', tieRanks, tieResolved: {}
+      });
+      return;
+    }
+  }
+
+  showScreen('resultScreen');
+  // itoモードはタイトルへ戻るを表示、人狼モードはゲーム終了まで非表示
+  const isLastGame = currentMode === 'werewolf' && currentGameNumber >= totalGameCount;
+  document.getElementById('backToTitleBtn').style.display = currentMode === 'ito' ? 'inline-block' : 'none';
+  renderResult(data, determineFinalOrder(votes, playerIds));
+}
+
+function renderResult(data, finalOrder) {
+  const votes = data.votes || {};
+  const numbers = data.numbers || {};
+  const hints = data.hints || {};
+  const playerIds = data.playerOrder || Object.keys(players);
+  const correctOrder = [...playerIds].sort((a, b) => numbers[a] - numbers[b]);
+  const isSuccess = finalOrder.every((id, i) => id === correctOrder[i]);
+
+  document.getElementById('resultStatus').textContent = isSuccess ? '成功' : '失敗';
+  document.getElementById('resultStatus').className = 'result-status ' + (isSuccess ? 'success' : 'fail');
+
+  const rankVoteCounts = {};
+  finalOrder.forEach((id, rank) => {
+    let count = 0;
+    Object.values(votes).forEach(voteObj => {
+      if (!voteObj) return;
+      const name = voteObj[rank] || voteObj[String(rank)];
+      if (!name) return;
+      const vid = playerIds.find(pid => players[pid]?.name === name);
+      if (vid === id) count++;
+    });
+    rankVoteCounts[id] = count;
+  });
+
+  const orderList = document.getElementById('resultOrderList');
+  orderList.innerHTML = '';
+  const totalVoters = Object.keys(votes).length;
+
+  finalOrder.forEach((id, i) => {
+    const isCorrect = id === correctOrder[i];
+    const item = document.createElement('div');
+    item.className = 'result-order-item' + (isCorrect ? '' : ' wrong');
+    item.innerHTML = `
+      <div class="result-order-hint">${hints[id] || '?'}</div>
+      <div class="result-order-number">${numbers[id]}</div>
+      <div class="result-order-name">${players[id]?.name || id}</div>
+      <div style="font-size:11px; color:var(--gray-dark); margin-top:2px;">${rankVoteCounts[id] || 0}/${totalVoters}票</div>
+    `;
+    orderList.appendChild(item);
+    if (i < finalOrder.length - 1) {
+      const arrow = document.createElement('div');
+      arrow.className = 'result-arrow';
+      arrow.textContent = '→';
+      orderList.appendChild(arrow);
+    }
+  });
+
+  const voteDetail = document.createElement('div');
+  voteDetail.style.cssText = 'margin-top:16px;';
+  voteDetail.innerHTML = '<div style="font-size:13px; color:var(--gray-dark); font-weight:700; margin-bottom:8px;">みんなの投票</div>';
+  Object.entries(votes).forEach(([voterId, voteObj]) => {
+    const voterName = players[voterId]?.name || voterId;
+    const voteStr = Object.keys(voteObj).sort((a,b)=>Number(a)-Number(b)).map((k) => {
+      const name = voteObj[k];
+      const id = playerIds.find(pid => players[pid]?.name === name);
+      const hint = hints[id] || '?';
+      return `${Number(k)+1}番目：${hint}(${name})`;
+    }).join('　');
+    const div = document.createElement('div');
+    div.style.cssText = 'font-size:13px; padding:6px 0; border-bottom:1px solid var(--green-pale);';
+    div.innerHTML = `<strong>${voterName}</strong>　${voteStr}`;
+    voteDetail.appendChild(div);
+  });
+  const existingVoteDetail = document.getElementById('voteDetailSection');
+  if (existingVoteDetail) existingVoteDetail.remove();
+  voteDetail.id = 'voteDetailSection';
+  document.querySelector('#resultScreen .result-order').appendChild(voteDetail);
+
+  const isLastGame = currentMode === 'werewolf' && currentGameNumber >= totalGameCount;
+  const nextBtn = document.getElementById('nextGameBtn');
+  nextBtn.style.display = isLastGame ? 'none' : 'inline-block';
+  nextBtn.disabled = false;
+  nextBtn.textContent = '次のゲームへ';
+  const wvBtn = document.getElementById('werewolfVoteBtn');
+  wvBtn.style.display = isLastGame ? 'inline-block' : 'none';
+  wvBtn.disabled = false;
+  wvBtn.textContent = '人狼投票をする';
+}
+
+function findTieRanks(votes, playerIds) {
+  const tieRanks = [];
+  const usedIds = new Set();
+  for (let rank = 0; rank < playerIds.length; rank++) {
+    const voteCounts = {};
+    playerIds.forEach(id => { voteCounts[id] = 0; });
+    Object.values(votes).forEach(voteObj => {
+      if (!voteObj) return;
+      const name = voteObj[rank] || voteObj[String(rank)];
+      if (!name) return;
+      const id = playerIds.find(pid => players[pid]?.name === name);
+      if (id && !usedIds.has(id)) voteCounts[id]++;
+    });
+    const available = playerIds.filter(id => !usedIds.has(id));
+    const maxVotes = Math.max(...available.map(id => voteCounts[id]));
+    const tied = available.filter(id => voteCounts[id] === maxVotes);
+    if (tied.length > 1) {
+      tieRanks.push({ rank, candidates: tied });
+    } else if (tied.length === 1) {
+      usedIds.add(tied[0]);
+    }
+  }
+  return tieRanks;
+}
+
+function showTiebreakDiscuss(data) {
+  const tieRanks = data.tieRanks || [];
+  const tieResolved = data.tieResolved || {};
+  const hints = data.hints || {};
+  const playerIds = data.playerOrder || Object.keys(players);
+
+  const infoDiv = document.getElementById('tiebreakInfo');
+  const selectsDiv = document.getElementById('tiebreakSelects');
+  const confirmBtn = document.getElementById('tiebreakConfirmBtn');
+  const waitingDiv = document.getElementById('tiebreakWaiting');
+
+  const rankNames = tieRanks.map(t => `${t.rank + 1}番目`).join('、');
+  infoDiv.textContent = `${rankNames}が同数です。チャットで話し合い、ホストが順番を決定してください。`;
+
+  if (isHost) {
+    confirmBtn.style.display = 'block';
+    waitingDiv.style.display = 'none';
+    selectsDiv.innerHTML = '';
+    tieRanks.forEach(({ rank, candidates }) => {
+      if (tieResolved[rank] !== undefined) return;
+      const label = document.createElement('div');
+      label.style.cssText = 'font-size:13px; font-weight:700; color:var(--green-dark); margin-bottom:6px; margin-top:12px;';
+      label.textContent = `${rank + 1}番目を選んでください`;
+      selectsDiv.appendChild(label);
+      const select = document.createElement('select');
+      select.id = `tiebreakSelect_${rank}`;
+      select.style.cssText = 'width:100%; margin-bottom:4px;';
+      const def = document.createElement('option');
+      def.value = ''; def.textContent = '選択してください';
+      select.appendChild(def);
+      candidates.forEach(id => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = `${hints[id] || '?'}（${players[id]?.name || id}）`;
+        select.appendChild(opt);
+      });
+      selectsDiv.appendChild(select);
+    });
+  } else {
+    confirmBtn.style.display = 'none';
+    waitingDiv.style.display = 'block';
+    selectsDiv.innerHTML = '';
+    Object.entries(tieResolved).forEach(([rank, id]) => {
+      const div = document.createElement('div');
+      div.style.cssText = 'font-size:13px; padding:6px 0; color:var(--green-dark);';
+      div.textContent = `${Number(rank)+1}番目：${hints[id] || '?'}（${players[id]?.name || id}）に決定`;
+      selectsDiv.appendChild(div);
+    });
+  }
+}
+
+function confirmTiebreak() {
+  if (!isHost) return;
+  window._get(window._ref(window._db, `ito_rooms/${roomKey}/tieRanks`)).then(snap => {
+    const tieRanks = snap.val() || [];
+    const tieResolved = {};
+    let valid = true;
+    tieRanks.forEach(({ rank }) => {
+      const select = document.getElementById(`tiebreakSelect_${rank}`);
+      if (!select || !select.value) { valid = false; return; }
+      tieResolved[rank] = select.value;
+    });
+    if (!valid) { alert('すべての同数順位を選択してください'); return; }
+    window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'tiebreak_result', tieResolved });
+  });
+}
+
+function showTiebreakResult(data) {
+  showScreen('resultScreen');
+  document.getElementById('backToTitleBtn').style.display = currentMode === 'ito' ? 'inline-block' : 'none';
+  const votes = data.votes || {};
+  const playerIds = data.playerOrder || Object.keys(players);
+  const tieResolved = data.tieResolved || {};
+  const finalOrder = determineFinalOrderWithTie(votes, playerIds, tieResolved);
+  renderResult(data, finalOrder);
+}
+
+function determineFinalOrder(votes, playerIds) {
+  const finalOrder = [];
+  const usedIds = new Set();
+  for (let rank = 0; rank < playerIds.length; rank++) {
+    const voteCounts = {};
+    playerIds.forEach(id => { voteCounts[id] = 0; });
+    Object.values(votes).forEach(voteObj => {
+      if (!voteObj) return;
+      const name = voteObj[rank] || voteObj[String(rank)];
+      if (!name) return;
+      const id = playerIds.find(pid => players[pid]?.name === name);
+      if (id && !usedIds.has(id)) voteCounts[id]++;
+    });
+    let maxVotes = -1, winner = null;
+    playerIds.forEach(id => {
+      if (!usedIds.has(id) && voteCounts[id] > maxVotes) { maxVotes = voteCounts[id]; winner = id; }
+    });
+    if (winner) { finalOrder.push(winner); usedIds.add(winner); }
+  }
+  return finalOrder;
+}
+
+function determineFinalOrderWithTie(votes, playerIds, tieResolved) {
+  const finalOrder = [];
+  const usedIds = new Set();
+  const resolved = {};
+  Object.entries(tieResolved).forEach(([rank, id]) => { resolved[Number(rank)] = id; });
+  for (let rank = 0; rank < playerIds.length; rank++) {
+    if (resolved[rank]) { finalOrder.push(resolved[rank]); usedIds.add(resolved[rank]); continue; }
+    const voteCounts = {};
+    playerIds.forEach(id => { voteCounts[id] = 0; });
+    Object.values(votes).forEach(voteObj => {
+      if (!voteObj) return;
+      const name = voteObj[rank] || voteObj[String(rank)];
+      if (!name) return;
+      const id = playerIds.find(pid => players[pid]?.name === name);
+      if (id && !usedIds.has(id)) voteCounts[id]++;
+    });
+    let maxVotes = -1, winner = null;
+    playerIds.forEach(id => {
+      if (!usedIds.has(id) && voteCounts[id] > maxVotes) { maxVotes = voteCounts[id]; winner = id; }
+    });
+    if (winner) { finalOrder.push(winner); usedIds.add(winner); }
+  }
+  return finalOrder;
+}
+
+function goNextGame() {
+  // 自分が押したことをFirebaseに記録
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}/nextGameReady`), { [myId]: true });
+  // ボタンを「待機中」に変更
+  const btn = document.getElementById('nextGameBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '他の人を待っています...'; }
+}
+
+function proceedNextGame() {
+  if (!isHost) return;
+  document.getElementById('chatMessages').innerHTML = '';
+  window._get(window._ref(window._db, `ito_rooms/${roomKey}`)).then(snap => {
+    const d = snap.val();
+    const gameNum = d.currentGameNumber || currentGameNumber;
+    // gameResultsに現在のゲーム結果を追加（1回のupdateで全部保存）
+    const existingResults = (d.gameResults && typeof d.gameResults === 'object') ? d.gameResults : {};
+    const updatedResults = Object.assign({}, existingResults, {
+      [String(gameNum)]: {
+        gameNumber: gameNum,
+        theme: d.theme,
+        hints: d.hints,
+        numbers: d.numbers,
+        playerOrder: d.playerOrder
+      }
+    });
+    window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+      gameResults: updatedResults,
+      phase: 'hint',
+      theme: getRandomTheme(),
+      numbers: assignNumbers(Object.keys(players)),
+      werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
+      playerOrder: shuffleArray(Object.keys(players)),
+      hints: {}, votes: {}, chat: {}, nextGameReady: {},
+      currentGameNumber: gameNum + 1
+    });
+  });
+  myVoteArray = [];
+}
+
+function goWerewolfVote() {
+  // 自分が押したことをFirebaseに記録
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}/werewolfVoteReady`), { [myId]: true });
+  const btn = document.getElementById('werewolfVoteBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '他の人を待っています...'; }
+}
+
+function proceedWerewolfVote() {
+  if (!isHost) return;
+  window._get(window._ref(window._db, `ito_rooms/${roomKey}`)).then(snap => {
+    const d = snap.val();
+    const gameNum = d.currentGameNumber || currentGameNumber;
+    const existingResults = (d.gameResults && typeof d.gameResults === 'object') ? d.gameResults : {};
+    const updatedResults = Object.assign({}, existingResults, {
+      [String(gameNum)]: {
+        gameNumber: gameNum,
+        theme: d.theme,
+        hints: d.hints,
+        numbers: d.numbers,
+        playerOrder: d.playerOrder
+      }
+    });
+    window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+      gameResults: updatedResults,
+      phase: 'werewolf_vote',
+      werewolfVotes: {},
+      werewolfVoteReady: {},
+      wvDiscussStartTime: Date.now()
+    });
+  });
+}
+
+function changeHistoryPage(dir) {
+  wvHistoryPage = Math.max(0, Math.min(wvHistoryData.length - 1, wvHistoryPage + dir));
+  renderWvHistoryPage();
+}
+
+function renderWvHistoryPage() {
+  const historyDiv = document.getElementById('wvHistory');
+  const pageLabel = document.getElementById('wvHistoryPageLabel');
+  const prevBtn = document.getElementById('wvHistoryPrev');
+  const nextBtn = document.getElementById('wvHistoryNext');
+  if (!historyDiv) return;
+  historyDiv.innerHTML = '';
+  if (wvHistoryData.length === 0) {
+    historyDiv.innerHTML = '<div style="font-size:13px; color:var(--gray-mid);">履歴がありません</div>';
+    if (pageLabel) pageLabel.textContent = '';
+    return;
+  }
+  if (pageLabel) pageLabel.textContent = `${wvHistoryPage + 1} / ${wvHistoryData.length}`;
+  if (prevBtn) prevBtn.disabled = wvHistoryPage === 0;
+  if (nextBtn) nextBtn.disabled = wvHistoryPage === wvHistoryData.length - 1;
+  const result = wvHistoryData[wvHistoryPage];
+  const playerIds = Object.keys(players);
+  const gameDiv = document.createElement('div');
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:13px; font-weight:700; color:var(--green-dark); margin-bottom:8px;';
+  title.textContent = `ゲーム ${result.gameNumber}：${result.theme || ''}`;
+  gameDiv.appendChild(title);
+  const pIds = result.playerOrder || playerIds;
+  const hintsRow = document.createElement('div');
+  hintsRow.style.cssText = 'display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;';
+  pIds.forEach(id => {
+    const item = document.createElement('div');
+    item.style.cssText = 'background:var(--green-pale); border:1px solid var(--green-mid); border-radius:8px; padding:6px 12px; font-size:13px; text-align:center;';
+    item.innerHTML = `<div style="font-weight:700;">${result.hints?.[id] || '?'}</div><div style="font-size:11px; color:var(--gray-dark);">${players[id]?.name || id}</div><div style="font-size:18px; font-weight:900; color:var(--green-accent);">${result.numbers?.[id] || '?'}</div>`;
+    hintsRow.appendChild(item);
+  });
+  gameDiv.appendChild(hintsRow);
+  historyDiv.appendChild(gameDiv);
+}
+
+function showWerewolfVoteScreen(data) {
+  showScreen('werewolfVoteScreen');
+  const playerIds = Object.keys(players);
+
+  // 話し合いタイマー開始（werewolf_voteフェーズのみ）
+  if (data.phase === 'werewolf_vote') {
+    if (!wvTimerInterval) startWvDiscussTimer(data.wvDiscussStartTime || Date.now());
+  }
+
+  // 投票ボタン
+  const list = document.getElementById('wvPlayerList');
+  list.innerHTML = '';
+  playerIds.forEach(id => {
+    if (id === myId) return;
+    const btn = document.createElement('button');
+    btn.className = 'wv-player-btn';
+    btn.textContent = players[id]?.name || id;
+    btn.onclick = () => {
+      document.querySelectorAll('.wv-player-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      werewolfVoteTarget = id;
+      document.getElementById('wvSubmitBtn').disabled = false;
+    };
+    list.appendChild(btn);
+  });
+  if (data.werewolfVotes?.[myId]) {
+    document.getElementById('wvSubmitBtn').disabled = true;
+    document.getElementById('wvWaiting').textContent = `投票済み（${Object.keys(data.werewolfVotes).length} / ${playerIds.length} 人）`;
+  }
+
+  // 履歴表示（ページング）
+  let gameResults = [];
+  if (data.gameResults && typeof data.gameResults === 'object') {
+    gameResults = Object.values(data.gameResults)
+      .filter(r => r != null)
+      .sort((a, b) => (a.gameNumber || 0) - (b.gameNumber || 0));
+  }
+  // 件数が変わった時だけページをリセット（ボタン操作中のページを維持するため）
+  if (gameResults.length !== wvHistoryData.length) {
+    wvHistoryData = gameResults;
+    wvHistoryPage = Math.max(0, wvHistoryData.length - 1);
+  } else {
+    wvHistoryData = gameResults;
+  }
+  renderWvHistoryPage();
+
+  if (data.wvChat) updateWvChat(data.wvChat);
+}
+
+function renderWvGameHistory(container, gameResults, playerIds) {
+  if (!gameResults || gameResults.length === 0) {
+    container.innerHTML = '<div style="font-size:13px; color:var(--gray-mid);">履歴がありません</div>';
+    return;
+  }
+  gameResults.forEach(result => {
+    const gameDiv = document.createElement('div');
+    gameDiv.style.cssText = 'margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--green-pale);';
+    const title = document.createElement('div');
+    title.style.cssText = 'font-size:13px; font-weight:700; color:var(--green-dark); margin-bottom:8px;';
+    title.textContent = `ゲーム ${result.gameNumber}：${result.theme || ''}`;
+    gameDiv.appendChild(title);
+    const pIds = result.playerOrder || playerIds;
+    const hintsRow = document.createElement('div');
+    hintsRow.style.cssText = 'display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;';
+    pIds.forEach(id => {
+      const item = document.createElement('div');
+      item.style.cssText = 'background:var(--green-pale); border:1px solid var(--green-mid); border-radius:8px; padding:6px 12px; font-size:13px; text-align:center;';
+      item.innerHTML = `<div style="font-weight:700;">${result.hints?.[id] || '?'}</div><div style="font-size:11px; color:var(--gray-dark);">${players[id]?.name || id}</div><div style="font-size:18px; font-weight:900; color:var(--green-accent);">${result.numbers?.[id] || '?'}</div>`;
+      hintsRow.appendChild(item);
+    });
+    gameDiv.appendChild(hintsRow);
+    if (result.votes && Object.keys(result.votes).length > 0) {
+      const voteTitle = document.createElement('div');
+      voteTitle.style.cssText = 'font-size:12px; color:var(--gray-dark); margin-bottom:4px;';
+      voteTitle.textContent = '投票：';
+      gameDiv.appendChild(voteTitle);
+      Object.entries(result.votes).forEach(([voterId, voteObj]) => {
+        const voterName = players[voterId]?.name || voterId;
+        const voteStr = Object.keys(voteObj).sort((a,b)=>Number(a)-Number(b)).map((k) => {
+          const name = voteObj[k];
+          const id = pIds.find(pid => players[pid]?.name === name);
+          return `${'①②③④⑤⑥⑦⑧'[Number(k)]}${result.hints?.[id] || name}`;
+        }).join(' ');
+        const div = document.createElement('div');
+        div.style.cssText = 'font-size:12px; padding:2px 0; color:var(--green-dark);';
+        div.textContent = `${voterName}：${voteStr}`;
+        gameDiv.appendChild(div);
+      });
+    }
+    container.appendChild(gameDiv);
+  });
+}
+
+function sendWvChat() {
+  const input = document.getElementById('wvChatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  window._push(window._ref(window._db, `ito_rooms/${roomKey}/wvChat`), {
+    sender: myName, text, senderId: myId, timestamp: Date.now()
+  });
+}
+
+function updateWvChat(chatData) {
+  const messages = document.getElementById('wvChatMessages');
+  if (!messages) return;
+  const entries = Object.values(chatData).sort((a, b) => a.timestamp - b.timestamp);
+  if (entries.length === messages.children.length) return;
+  messages.innerHTML = '';
+  entries.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + (msg.senderId === myId ? 'mine' : 'theirs');
+    div.innerHTML = `<div class="sender">${msg.sender}</div>${msg.text}`;
+    messages.appendChild(div);
+  });
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function showWerewolfVoteOnlyScreen(data) {
+  showScreen('werewolfVoteOnlyScreen');
+  const playerIds = Object.keys(players);
+  const list = document.getElementById('wvPlayerList');
+  list.innerHTML = '';
+  playerIds.forEach(id => {
+    if (id === myId) return;
+    const btn = document.createElement('button');
+    btn.className = 'wv-player-btn';
+    btn.textContent = players[id]?.name || id;
+    btn.onclick = () => {
+      document.querySelectorAll('.wv-player-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      werewolfVoteTarget = id;
+      document.getElementById('wvSubmitBtn').disabled = false;
+    };
+    list.appendChild(btn);
+  });
+  if (data.werewolfVotes?.[myId]) {
+    document.getElementById('wvSubmitBtn').disabled = true;
+    document.getElementById('wvWaiting').textContent = `投票済み（${Object.keys(data.werewolfVotes).length} / ${playerIds.length} 人）`;
+  } else {
+    document.getElementById('wvWaiting').textContent = '';
+    document.getElementById('wvSubmitBtn').disabled = werewolfVoteTarget === null;
+  }
+}
+
+function submitWerewolfVote() {
+  if (!werewolfVoteTarget) return;
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}/werewolfVotes`), { [myId]: werewolfVoteTarget });
+  document.getElementById('wvSubmitBtn').disabled = true;
+}
+
+function showWerewolfResultScreen(data) {
+  showScreen('werewolfResultScreen');
+  const werewolfId = data.werewolf;
+  const werewolfVotes = data.werewolfVotes || {};
+  const playerIds = Object.keys(players);
+  const voteCounts = {};
+  playerIds.forEach(id => { voteCounts[id] = 0; });
+  Object.values(werewolfVotes).forEach(targetId => { if (voteCounts[targetId] !== undefined) voteCounts[targetId]++; });
+  const maxVotes = Math.max(...Object.values(voteCounts));
+  const mostVoted = Object.keys(voteCounts).filter(id => voteCounts[id] === maxVotes);
+  const villageWin = mostVoted.length === 1 && mostVoted[0] === werewolfId;
+
+  const screen = document.getElementById('werewolfResultScreen');
+  screen.className = 'screen active ' + (villageWin ? 'wr-bg-village' : 'wr-bg-wolf');
+  document.getElementById('wrWinner').textContent = villageWin ? '村人の勝利！' : '人狼の勝利！';
+  document.getElementById('wrWinner').className = 'wr-winner ' + (villageWin ? 'village' : 'wolf');
+  document.getElementById('wrSub').textContent = villageWin ? '人狼を見破りました！' : '人狼に騙されました...';
+  document.getElementById('wrWerewolfName').textContent = players[werewolfId]?.name || werewolfId;
+  document.getElementById('wrVoteResult').textContent = `投票結果 → ` + Object.entries(voteCounts).map(([id, count]) => `${players[id]?.name || id}：${count}票`).join('　');
+}
+
+function listenToRoom() {
+  if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+  const discRef = window._ref(window._db, `ito_rooms/${roomKey}/disconnected/${myId}`);
+  window._onDisconnect(discRef).set(true);
+
+  roomUnsubscribe = window._onValue(window._ref(window._db, `ito_rooms/${roomKey}`), snap => {
+    const data = snap.val();
+    if (!data) return;
+
+    if (data.disconnected) {
+      const other = Object.keys(data.disconnected).find(id => id !== myId && data.disconnected[id]);
+      if (other && data.phase !== 'waiting') {
+        alert(`${data.players?.[other]?.name || '相手'}が退出しました。`);
+        if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+        showScreen('titleScreen'); return;
+      }
+    }
+
+    players = data.players || {};
+
+    if (data.phase === 'waiting') { updateWaitingScreen(data); return; }
+
+    if (data.phase === 'discuss') {
+      showScreen('gameScreen');
+      updateGameScreen(data);
+      startDiscussTimer(data.discussStartTime);
+      return;
+    }
+
+    if (data.phase === 'hint' || data.phase === 'vote') {
+      showScreen('gameScreen');
+      updateGameScreen(data);
+      // 初回ゲーム開始時に接続メッセージを表示
+      if (data.phase === 'hint' && data.currentGameNumber === 1 && !joinAlertShown) {
+        joinAlertShown = true;
+        lastRoomKey = roomKey;
+        const werewolfId = data.werewolf;
+        if (currentMode === 'werewolf') {
+          if (werewolfId && werewolfId === myId) {
+            setTimeout(() => alert('接続しました。\nあなたは人狼です。他の人に配られた数字を見ることができます。自分が人狼だと悟られないようにitoを失敗させましょう。'), 500);
+          } else {
+            setTimeout(() => alert('接続しました。\nあなたは村人です。人狼を探しつつitoを成功させましょう。'), 500);
+          }
+        } else {
+          setTimeout(() => alert('接続しました。\n協力してitoを成功させましょう！'), 500);
+        }
+      }
+      if (data.phase === 'hint' && isHost) {
+        const pIds = Object.keys(players);
+        const hints = data.hints || {};
+        if (pIds.length > 0 && pIds.every(id => hints[id])) {
+          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'discuss', discussStartTime: Date.now() });
+        }
+      }
+      if (data.phase === 'vote' && isHost) {
+        const pIds = Object.keys(players);
+        const votes = data.votes || {};
+        if (pIds.length > 0 && pIds.every(id => votes[id])) {
+          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'result' });
+        }
+      }
+      return;
+    }
+
+    if (data.phase === 'result') {
+      // 全員が次のゲームへを押したかチェック（ホストのみ）
+      if (isHost && data.nextGameReady) {
+        const pIds = Object.keys(players);
+        const ready = data.nextGameReady || {};
+        if (pIds.length > 0 && pIds.every(id => ready[id])) {
+          proceedNextGame();
+          return;
+        }
+      }
+      // 全員が人狼投票へを押したかチェック（ホストのみ）
+      if (isHost && data.werewolfVoteReady) {
+        const pIds = Object.keys(players);
+        const ready = data.werewolfVoteReady || {};
+        if (pIds.length > 0 && pIds.every(id => ready[id])) {
+          proceedWerewolfVote();
+          return;
+        }
+      }
+      showResultScreen(data);
+      // 自分がすでに次のゲームへを押していたらボタンを待機状態に
+      if (data.nextGameReady?.[myId]) {
+        const btn = document.getElementById('nextGameBtn');
+        if (btn) { btn.disabled = true; btn.textContent = '他の人を待っています...'; }
+      }
+      // 自分がすでに人狼投票へを押していたらボタンを待機状態に
+      if (data.werewolfVoteReady?.[myId]) {
+        const btn = document.getElementById('werewolfVoteBtn');
+        if (btn) { btn.disabled = true; btn.textContent = '他の人を待っています...'; }
+      }
+      return;
+    }
+    if (data.phase === 'tiebreak_discuss') { showScreen('gameScreen'); updateGameScreen(data); return; }
+    if (data.phase === 'tiebreak_result') { showTiebreakResult(data); return; }
+
+    if (data.phase === 'werewolf_vote') {
+      showWerewolfVoteScreen(data);
+      if (data.wvChat) updateWvChat(data.wvChat);
+      return;
+    }
+
+    if (data.phase === 'werewolf_vote_open') {
+      showWerewolfVoteOnlyScreen(data);
+      if (isHost) {
+        const pIds = Object.keys(players);
+        const wVotes = data.werewolfVotes || {};
+        if (pIds.length > 0 && pIds.every(id => wVotes[id])) {
+          // 同数チェック
+          const voteCounts = {};
+          pIds.forEach(id => { voteCounts[id] = 0; });
+          Object.values(wVotes).forEach(targetId => { if (voteCounts[targetId] !== undefined) voteCounts[targetId]++; });
+          const maxVotes = Math.max(...Object.values(voteCounts));
+          const mostVoted = Object.keys(voteCounts).filter(id => voteCounts[id] === maxVotes);
+          if (mostVoted.length > 1) {
+            // 同数 → アラート → 再話し合い・再投票
+            alert('同数になりました。もう一度話し合いを行ってください。');
+            window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+              phase: 'werewolf_vote',
+              werewolfVotes: {},
+              wvDiscussStartTime: Date.now()
+            });
+          } else {
+            window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'werewolf_result' });
+          }
+        }
+      }
+      return;
+    }
+
+    if (data.phase === 'werewolf_result') { showWerewolfResultScreen(data); return; }
+  });
+}
+
+function updateWaitingScreen(data) {
+  const list = document.getElementById('playerListWaiting');
+  list.innerHTML = '';
+  Object.values(data.players || {}).forEach(p => {
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="player-dot"></div>${p.name}`;
+    list.appendChild(li);
+  });
+}
+
+function backToTitle() {
+  if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
+  myVoteArray = []; werewolfVoteTarget = null;
+  if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
+  if (discussTimerInterval) { clearInterval(discussTimerInterval); discussTimerInterval = null; }
+  showScreen('titleScreen');
+}
+
+function playAgain() {
+  if (!isHost) return;
+  myVoteArray = []; werewolfVoteTarget = null;
+  document.getElementById('chatMessages').innerHTML = '';
+  if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+    phase: 'hint',
+    theme: getRandomTheme(),
+    numbers: assignNumbers(Object.keys(players)),
+    werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
+    playerOrder: shuffleArray(Object.keys(players)),
+    hints: {}, votes: {}, werewolfVotes: {}, chat: {}, currentGameNumber: 1
+  });
+}
+
+document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
+document.getElementById('hintInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitHint(); });
+document.getElementById('wvChatInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendWvChat(); });
+</script>
+</body>
+</html>

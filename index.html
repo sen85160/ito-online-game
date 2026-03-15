@@ -1638,16 +1638,48 @@ function backToTitle() {
 
 function playAgain() {
   if (!isHost) return;
-  myVoteArray = []; werewolfVoteTarget = null;
-  document.getElementById('chatMessages').innerHTML = '';
+  
+  // グローバル変数をリセット
+  currentGameNumber = 1;
+  gameSuccessResults = {};
+  wvHistoryData = [];
+  wvHistoryPage = 0;
+  myVoteArray = [];
+  werewolfVoteTarget = null;
+  
+  // タイマーをクリア
+  if (discussTimerInterval) { clearInterval(discussTimerInterval); discussTimerInterval = null; }
   if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
+  
+  // DOMをクリア
+  document.getElementById('chatMessages').innerHTML = '';
+  const wvChatEl = document.getElementById('wvChatMessages');
+  if (wvChatEl) wvChatEl.innerHTML = '';
+  document.getElementById('chatInput').value = '';
+  document.getElementById('hintInput').value = '';
+  
+  // Firebaseをリセット
   window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
     phase: 'hint',
+    currentGameNumber: 1,
     theme: getRandomTheme(),
     numbers: assignNumbers(Object.keys(players)),
     werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
     playerOrder: shuffleArray(Object.keys(players)),
-    hints: {}, votes: {}, werewolfVotes: {}, chat: {}, currentGameNumber: 1
+    hints: {},
+    votes: {},
+    chat: {},
+    werewolfVotes: {},
+    wvChat: {},
+    gameResults: {},
+    lastGameSuccess: null,
+    discussStartTime: null,
+    wvDiscussStartTime: null,
+    villageWinWithoutVote: false,
+    nextGameReady: {},
+    werewolfVoteReady: {},
+    tieRanks: null,
+    tieResolved: {}
   });
 }
 

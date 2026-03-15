@@ -263,6 +263,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
 <button class="mode-btn ghost" id="modeBtnIto" onclick="selectMode('ito')">通常ito</button>
     <button class="mode-btn ghost" id="modeBtnWerewolf" onclick="selectMode('werewolf')">ito人狼</button>
   </div>
+    <button class="ghost" style="margin-bottom:16px;" onclick="showItoRules()">ルールを読む</button>
+  <div id="itoRuleScreen" style="display:none; text-align:center; padding:20px; background:white; min-height:100vh; position:fixed; inset:0; z-index:9999; overflow-y:auto;">
+    <p style="font-size:14px; color:#888; margin-bottom:16px;">▼ 下にスクロールして読む</p>
+    <img src="ito_rule1.png" style="width:95%; max-width:800px; margin-bottom:10px; border:1px solid #ccc; border-radius:8px;">
+    <br>
+    <img src="ito_rule2.png" style="width:95%; max-width:800px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px;">
+    <br>
+    <button onclick="document.getElementById('itoRuleScreen').style.display='none'" style="padding:12px 28px; font-size:16px;">閉じる</button>
+  </div>
+
+  
   <div class="setup-card" id="setupCard" style="display:none;">
     <h3>部屋の設定</h3>
     <div class="form-row">
@@ -297,6 +308,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
     <button class="start-btn" onclick="startRoom()">スタート</button>
   </div>
 </div>
+  
+
 
 <!-- 待機オーバーレイ -->
 <div id="waitingOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center;">
@@ -399,7 +412,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
   </div>
   <div class="result-buttons">
     <button id="nextGameBtn" onclick="goNextGame()">次のゲームへ</button>
-    <button id="werewolfVoteBtn" class="danger" style="display:none;" onclick="goWerewolfVote()">人狼投票をする</button>
+    <button id="werewolfVoteBtn" class="danger" style="display:none;" onclick="goWerewolfVote()">次へ</button>
     <button id="backToTitleBtn" class="ghost" onclick="backToTitle()">タイトルへ戻る</button>
   </div>
 </div>
@@ -537,6 +550,11 @@ let wvHistoryPage = 0;
 let wvHistoryData = [];
 let joinAlertShown = false;
 let lastRoomKey = '';  
+
+function showItoRules() {
+  document.getElementById('itoRuleScreen').style.display = 'block';
+  window.scrollTo(0, 0);
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1154,7 +1172,8 @@ function proceedNextGame() {
         theme: d.theme,
         hints: d.hints,
         numbers: d.numbers,
-        playerOrder: d.playerOrder
+        playerOrder: d.playerOrder,
+        isSuccess: d.lastGameSuccess === true
       }
     });
     window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
@@ -1178,28 +1197,45 @@ function goWerewolfVote() {
   if (btn) { btn.disabled = true; btn.textContent = '他の人を待っています...'; }
 }
 
+
+
 function proceedWerewolfVote() {
   if (!isHost) return;
   window._get(window._ref(window._db, `ito_rooms/${roomKey}`)).then(snap => {
     const d = snap.val();
     const gameNum = d.currentGameNumber || currentGameNumber;
     const existingResults = (d.gameResults && typeof d.gameResults === 'object') ? d.gameResults : {};
-    const updatedResults = Object.assign({}, existingResults, {
+const updatedResults = Object.assign({}, existingResults, {
       [String(gameNum)]: {
         gameNumber: gameNum,
         theme: d.theme,
         hints: d.hints,
         numbers: d.numbers,
-        playerOrder: d.playerOrder
+        playerOrder: d.playerOrder,
+        isSuccess: d.lastGameSuccess === true
       }
     });
-    window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
-      gameResults: updatedResults,
-      phase: 'werewolf_vote',
-      werewolfVotes: {},
-      werewolfVoteReady: {},
-      wvDiscussStartTime: Date.now()
-    });
+    const failures = Object.values(updatedResults).filter(r => r && r.isSuccess === false).length;
+    const tgc = d.totalGameCount || totalGameCount;
+    if (failures === 0) {
+      // 全部成功 → 村人の勝利（投票なし）
+      window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+        gameResults: updatedResults,
+        phase: 'werewolf_result',
+        villageWinWithoutVote: true,
+        villageWinReason: `${tgc}回すべて成功したため`
+      });
+    } else {
+      // 1回以上失敗 → 話し合い→投票へ
+      window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+        gameResults: updatedResults,
+        phase: 'werewolf_vote',
+        werewolfVotes: {},
+        werewolfVoteReady: {},
+        wvDiscussStartTime: Date.now(),
+        villageWinWithoutVote: false
+      });
+    }
   });
 }
 
@@ -1397,22 +1433,31 @@ function submitWerewolfVote() {
 function showWerewolfResultScreen(data) {
   showScreen('werewolfResultScreen');
   const werewolfId = data.werewolf;
-  const werewolfVotes = data.werewolfVotes || {};
   const playerIds = Object.keys(players);
-  const voteCounts = {};
-  playerIds.forEach(id => { voteCounts[id] = 0; });
-  Object.values(werewolfVotes).forEach(targetId => { if (voteCounts[targetId] !== undefined) voteCounts[targetId]++; });
-  const maxVotes = Math.max(...Object.values(voteCounts));
-  const mostVoted = Object.keys(voteCounts).filter(id => voteCounts[id] === maxVotes);
-  const villageWin = mostVoted.length === 1 && mostVoted[0] === werewolfId;
-
   const screen = document.getElementById('werewolfResultScreen');
-  screen.className = 'screen active ' + (villageWin ? 'wr-bg-village' : 'wr-bg-wolf');
-  document.getElementById('wrWinner').textContent = villageWin ? '村人の勝利！' : '人狼の勝利！';
-  document.getElementById('wrWinner').className = 'wr-winner ' + (villageWin ? 'village' : 'wolf');
-  document.getElementById('wrSub').textContent = villageWin ? '人狼を見破りました！' : '人狼に騙されました...';
-  document.getElementById('wrWerewolfName').textContent = players[werewolfId]?.name || werewolfId;
-  document.getElementById('wrVoteResult').textContent = `投票結果 → ` + Object.entries(voteCounts).map(([id, count]) => `${players[id]?.name || id}：${count}票`).join('　');
+
+  if (data.villageWinWithoutVote) {
+    screen.className = 'screen active wr-bg-village';
+    document.getElementById('wrWinner').textContent = '村人の勝利！';
+    document.getElementById('wrWinner').className = 'wr-winner village';
+    document.getElementById('wrSub').textContent = data.villageWinReason || '全ゲーム成功しました';
+    document.getElementById('wrWerewolfName').textContent = players[werewolfId]?.name || werewolfId;
+    document.getElementById('wrVoteResult').textContent = '投票なしで村人の勝利が確定しました';
+  } else {
+    const werewolfVotes = data.werewolfVotes || {};
+    const voteCounts = {};
+    playerIds.forEach(id => { voteCounts[id] = 0; });
+    Object.values(werewolfVotes).forEach(targetId => { if (voteCounts[targetId] !== undefined) voteCounts[targetId]++; });
+    const maxVotes = Math.max(...Object.values(voteCounts));
+    const mostVoted = Object.keys(voteCounts).filter(id => voteCounts[id] === maxVotes);
+    const villageWin = mostVoted.length === 1 && mostVoted[0] === werewolfId;
+    screen.className = 'screen active ' + (villageWin ? 'wr-bg-village' : 'wr-bg-wolf');
+    document.getElementById('wrWinner').textContent = villageWin ? '村人の勝利！' : '人狼の勝利！';
+    document.getElementById('wrWinner').className = 'wr-winner ' + (villageWin ? 'village' : 'wolf');
+    document.getElementById('wrSub').textContent = villageWin ? '投票で人狼を当てたため' : '投票で人狼を外したため';
+    document.getElementById('wrWerewolfName').textContent = players[werewolfId]?.name || werewolfId;
+    document.getElementById('wrVoteResult').textContent = '投票結果 → ' + Object.entries(voteCounts).map(([id, count]) => `${players[id]?.name || id}：${count}票`).join('　');
+  }
 }
 
 function listenToRoom() {
@@ -1472,8 +1517,29 @@ function listenToRoom() {
       if (data.phase === 'vote' && isHost) {
         const pIds = Object.keys(players);
         const votes = data.votes || {};
-        if (pIds.length > 0 && pIds.every(id => votes[id])) {
-          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'result' });
+if (pIds.length > 0 && pIds.every(id => votes[id])) {
+          // 成功/失敗を判定してFirebaseに記録
+          const numbers = data.numbers || {};
+          const playerOrder = data.playerOrder || pIds;
+          const correctOrder = [...playerOrder].sort((a, b) => numbers[a] - numbers[b]);
+          const finalOrder = [];
+          const usedIds = new Set();
+          for (let rank = 0; rank < playerOrder.length; rank++) {
+            const vc = {};
+            playerOrder.forEach(id => { vc[id] = 0; });
+            Object.values(votes).forEach(voteObj => {
+              if (!voteObj) return;
+              const name = voteObj[rank] || voteObj[String(rank)];
+              if (!name) return;
+              const id = playerOrder.find(pid => players[pid]?.name === name);
+              if (id && !usedIds.has(id)) vc[id]++;
+            });
+            let maxV = -1, winner = null;
+            playerOrder.forEach(id => { if (!usedIds.has(id) && vc[id] > maxV) { maxV = vc[id]; winner = id; } });
+            if (winner) { finalOrder.push(winner); usedIds.add(winner); }
+          }
+          const isSuccess = finalOrder.every((id, i) => id === correctOrder[i]);
+          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'result', lastGameSuccess: isSuccess });
         }
       }
       return;

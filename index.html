@@ -1181,7 +1181,7 @@ function proceedNextGame() {
       phase: 'hint',
       theme: getRandomTheme(),
       numbers: assignNumbers(Object.keys(players)),
-      werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
+      werewolf: d.werewolf,
       playerOrder: shuffleArray(Object.keys(players)),
       hints: {}, votes: {}, chat: {}, nextGameReady: {},
       currentGameNumber: gameNum + 1

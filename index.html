@@ -5,31 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>itoオンライン</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
 :root {
-  --green-dark: #1a4731;
-  --green-mid: #2d7a50;
-  --green-light: #4caf80;
-  --green-pale: #e8f5ee;
-  --green-accent: #00c96e;
-  --white: #ffffff;
-  --gray-light: #f0f7f3;
-  --gray-mid: #b0c8bc;
-  --gray-dark: #4a6358;
-  --red: #e74c3c;
-  --gold: #f0c040;
-  --shadow: 0 4px 20px rgba(0,0,0,0.12);
-  --radius: 12px;
+  /* --- 「糸」をモチーフにした和紙×金糸パレット --- */
+  --paper: #f6f1e4;          /* 和紙のような温かいベージュ背景 */
+  --paper-deep: #efe8d6;
+  --ink: #1e2b21;            /* 墨色の濃いテキスト */
+  --green-dark: #1f3b2c;     /* 深緑（見出し・強調） */
+  --green-mid: #3d6d4c;      /* 中間の緑（ボタン） */
+  --green-light: #6f9b78;
+  --green-pale: #eef0e1;     /* 淡い生成り緑（カード地・区切り） */
+  --green-accent: #c6953c;   /* 金糸カラー（数字・重要な強調に使用） */
+  --thread-deep: #a3762a;
+  --white: #fffdf7;
+  --gray-light: #f1ece0;
+  --gray-mid: #cdc4ab;       /* 温かみのあるグレージュ */
+  --gray-dark: #6b6152;
+  --red: #ad4a3d;            /* 落ち着いた朱色（人狼・警告用） */
+  --gold: #c6953c;
+  --shadow: 0 10px 28px rgba(30,43,33,0.10);
+  --shadow-lg: 0 20px 48px rgba(30,43,33,0.16);
+  --radius: 18px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: 'Noto Sans JP', sans-serif;
-  background: var(--green-pale);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(198,149,60,0.08), transparent 60%),
+    radial-gradient(1000px 500px at 110% 10%, rgba(63,109,76,0.10), transparent 55%),
+    var(--paper);
   min-height: 100vh;
-  color: var(--green-dark);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .screen { display: none !important; }
@@ -41,44 +52,58 @@ h1 {
   font-family: 'Zen Maru Gothic', sans-serif;
   font-weight: 900;
   letter-spacing: 4px;
-  background: linear-gradient(135deg, var(--green-mid), var(--green-accent));
+  background: linear-gradient(135deg, var(--green-dark), var(--green-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 button {
-  padding: 10px 20px;
+  padding: 11px 22px;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 999px;
   background: var(--green-mid);
-  color: white;
+  color: var(--white);
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 14px;
   font-weight: 700;
+  letter-spacing: 0.5px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 2px 0 rgba(31,59,44,0.25);
 }
 button:hover { background: var(--green-dark); transform: translateY(-1px); }
-button:disabled { background: var(--gray-mid); cursor: not-allowed; transform: none; }
-button.danger { background: var(--red); }
-button.danger:hover { background: #c0392b; }
-button.ghost { background: transparent; border: 2px solid var(--green-mid); color: var(--green-mid); }
+button:active { transform: translateY(0); }
+button:disabled { background: var(--gray-mid); color: var(--white); cursor: not-allowed; transform: none; box-shadow: none; }
+button.danger { background: var(--red); box-shadow: 0 2px 0 rgba(122,50,41,0.3); }
+button.danger:hover { background: #8f382d; }
+button.ghost { background: transparent; border: 2px solid var(--green-mid); color: var(--green-mid); box-shadow: none; padding: 9px 20px; }
 button.ghost:hover { background: var(--green-pale); }
 
 input, select, textarea {
-  padding: 10px 14px;
+  padding: 11px 15px;
   border: 2px solid var(--gray-mid);
-  border-radius: var(--radius);
+  border-radius: 12px;
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 14px;
-  background: white;
-  color: var(--green-dark);
+  background: var(--white);
+  color: var(--ink);
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
+input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(61,109,76,0.15); }
 
-.card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+
+/* 糸（thread）モチーフの区切り線 */
+.thread-divider {
+  height: 10px;
+  margin: 4px 0;
+  background-image: radial-gradient(circle, var(--green-accent) 1.6px, transparent 1.8px);
+  background-size: 14px 10px;
+  background-repeat: repeat-x;
+  background-position: center;
+  opacity: 0.55;
+}
 
 /* タイトル */
 #titleScreen {
@@ -104,153 +129,212 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
 .title-logo {
   font-family: 'Zen Maru Gothic', sans-serif;
   font-weight: 900;
-  font-size: 96px;
-  letter-spacing: 8px;
+  font-size: 88px;
+  letter-spacing: 6px;
   background: linear-gradient(135deg, var(--green-dark), var(--green-accent));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   line-height: 1;
 }
-.title-sub { color: var(--gray-dark); font-size: 13px; letter-spacing: 3px; margin-bottom: 40px; }
-.mode-buttons { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; justify-content: center; }
-.mode-btn { padding: 16px 32px; font-size: 16px; border-radius: 50px; min-width: 180px; }
-.mode-btn.selected { background: var(--green-dark); box-shadow: 0 0 0 3px var(--green-accent); }
-.setup-card { background: white; border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); width: 100%; max-width: 480px; text-align: left; }
-.setup-card h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; color: var(--green-dark); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--green-pale); }
-.form-row { margin-bottom: 16px; }
-.form-row label { display: block; font-size: 13px; color: var(--gray-dark); margin-bottom: 6px; font-weight: 700; }
+.title-sub {
+  color: var(--gray-dark); font-size: 12px; letter-spacing: 4px; margin-bottom: 18px; font-weight: 700;
+}
+.title-thread {
+  width: 220px; height: 14px; margin: 0 auto 36px;
+  background-image: radial-gradient(circle, var(--green-accent) 2px, transparent 2.2px);
+  background-size: 16px 14px; background-repeat: repeat-x; background-position: center;
+  opacity: 0.7; position: relative;
+}
+.title-thread::before, .title-thread::after {
+  content: ''; position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green-accent); transform: translateY(-50%);
+}
+.title-thread::before { left: 0; }
+.title-thread::after { right: 0; }
+.mode-buttons { display: flex; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; justify-content: center; }
+.mode-btn { padding: 16px 34px; font-size: 16px; border-radius: 999px; min-width: 180px; background: var(--white); color: var(--green-mid); border: 2px solid var(--green-mid); box-shadow: var(--shadow); }
+.mode-btn:hover { background: var(--green-pale); }
+.mode-btn.selected { background: var(--green-dark); color: var(--white); border-color: var(--green-dark); box-shadow: 0 0 0 4px rgba(198,149,60,0.3); }
+.setup-card { background: var(--white); border-radius: 22px; padding: 30px; box-shadow: var(--shadow-lg); width: 100%; max-width: 480px; text-align: left; border: 1px solid rgba(30,43,33,0.06); }
+.setup-card h3 { font-family: 'Zen Maru Gothic', sans-serif; font-size: 17px; font-weight: 900; color: var(--green-dark); margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px dashed var(--green-pale); letter-spacing: 1px; }
+.form-row { margin-bottom: 18px; }
+.form-row label { display: block; font-size: 12.5px; color: var(--gray-dark); margin-bottom: 7px; font-weight: 700; letter-spacing: 0.5px; }
 .form-row input, .form-row select { width: 100%; }
-.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
 .radio-group input[type="radio"] { display: none; }
-.radio-group label { padding: 8px 16px; border: 2px solid var(--green-mid); border-radius: 50px; color: var(--green-mid); cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s; }
-.radio-group input[type="radio"]:checked + label { background: var(--green-mid); color: white; }
-.start-btn { width: 100%; padding: 14px; font-size: 16px; border-radius: 50px; margin-top: 8px; background: linear-gradient(135deg, var(--green-mid), var(--green-accent)); }
+.radio-group label { padding: 9px 18px; border: 2px solid var(--green-mid); border-radius: 999px; color: var(--green-mid); cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s; }
+.radio-group input[type="radio"]:checked + label { background: var(--green-mid); color: var(--white); box-shadow: 0 2px 0 rgba(31,59,44,0.2); }
+.start-btn { width: 100%; padding: 15px; font-size: 16px; border-radius: 999px; margin-top: 10px; background: linear-gradient(135deg, var(--green-dark), var(--green-mid) 55%, var(--green-accent)); box-shadow: var(--shadow); letter-spacing: 2px; }
 
 /* 待機 */
-.waiting-card { background: white; border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow); max-width: 480px; width: 100%; }
-.waiting-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; color: var(--green-dark); margin-bottom: 20px; }
-.room-key-display { background: var(--green-pale); border: 2px dashed var(--green-mid); border-radius: var(--radius); padding: 16px; font-size: 28px; font-weight: 900; color: var(--green-dark); letter-spacing: 4px; margin-bottom: 20px; }
+.waiting-card { background: var(--white); border-radius: 22px; padding: 40px; box-shadow: var(--shadow-lg); max-width: 480px; width: 100%; }
+.waiting-title { font-family: 'Zen Maru Gothic', sans-serif; font-weight: 900; font-size: 22px; color: var(--green-dark); margin-bottom: 20px; text-align: center; }
+.room-key-display { background: var(--green-pale); border: 2px dashed var(--green-accent); border-radius: 16px; padding: 18px; font-size: 30px; font-weight: 900; font-family: 'Zen Maru Gothic', sans-serif; color: var(--green-dark); letter-spacing: 5px; margin-bottom: 20px; text-align: center; }
 .player-list { list-style: none; margin-bottom: 20px; }
-.player-list li { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--green-pale); border-radius: 8px; margin-bottom: 8px; font-weight: 700; }
-.player-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green-accent); }
+.player-list li { display: flex; align-items: center; gap: 10px; padding: 11px 16px; background: var(--green-pale); border-radius: 12px; margin-bottom: 8px; font-weight: 700; font-size: 14.5px; }
+.player-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green-accent); box-shadow: 0 0 0 3px rgba(198,149,60,0.2); }
 
 /* ゲーム画面 */
-#gameScreen { padding: 16px; max-width: 1000px; margin: 0 auto; }
+#gameScreen { padding: 18px; max-width: 1040px; margin: 0 auto; }
 #gameScreen.active { display: block !important; }
-.game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
-.game-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 28px; font-weight: 900; background: linear-gradient(135deg, var(--green-dark), var(--green-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.game-info-bar { display: flex; gap: 12px; flex-wrap: wrap; }
-.badge { padding: 6px 14px; border-radius: 50px; font-size: 13px; font-weight: 700; background: var(--green-pale); color: var(--green-dark); border: 1px solid var(--green-mid); }
-.game-layout { display: grid; grid-template-columns: 1fr 260px; gap: 16px; }
-@media (max-width: 700px) { .game-layout { grid-template-columns: 1fr; } }
+.game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.game-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 26px; font-weight: 900; color: var(--green-dark); letter-spacing: 1px; }
+.game-info-bar { display: flex; gap: 10px; flex-wrap: wrap; }
+.badge { padding: 7px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: var(--white); color: var(--green-dark); border: 1.5px solid var(--green-mid); box-shadow: var(--shadow); }
+.game-layout { display: grid; grid-template-columns: 1fr 280px; gap: 18px; align-items: start; }
+.game-layout.no-chat { grid-template-columns: 1fr; }
+@media (max-width: 760px) { .game-layout { grid-template-columns: 1fr; } }
 .game-main { display: flex; flex-direction: column; gap: 16px; }
-.theme-card { background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); color: white; border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); }
-.theme-label { font-size: 12px; opacity: 0.7; letter-spacing: 2px; margin-bottom: 6px; }
-.theme-text { font-family: 'Zen Maru Gothic', sans-serif; font-size: 28px; font-weight: 900; letter-spacing: 2px; }
-.my-info-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-.my-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 56px; font-weight: 900; color: var(--green-accent); line-height: 1; }
-.my-info-details { flex: 1; }
-.my-role { font-size: 13px; color: var(--gray-dark); margin-bottom: 4px; }
-.my-role span { font-weight: 700; color: var(--green-dark); }
+.theme-card { position: relative; overflow: hidden; background: linear-gradient(135deg, var(--green-dark), var(--green-mid) 75%); color: var(--white); border-radius: 20px; padding: 22px 26px; box-shadow: var(--shadow-lg); }
+.theme-card::after { content: ''; position: absolute; right: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(198,149,60,0.35), transparent 70%); }
+.theme-label { font-size: 12px; opacity: 0.75; letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; }
+.theme-text { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; letter-spacing: 1px; position: relative; }
+
+/* 自分の数字：大きな金糸バッジで最重要情報を強調 */
+.my-info-card { background: var(--white); border-radius: 20px; padding: 20px 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; border: 1px solid rgba(30,43,33,0.05); }
+.my-number-badge {
+  flex-shrink: 0; width: 120px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ecc06f, var(--green-accent) 65%, var(--thread-deep));
+  box-shadow: 0 10px 24px rgba(198,149,60,0.4), inset 0 2px 6px rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  border: 4px solid var(--white); outline: 2px solid rgba(198,149,60,0.35);
+}
+.my-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 60px; font-weight: 900; color: var(--white); line-height: 1; text-shadow: 0 2px 6px rgba(90,60,10,0.35); }
+.my-info-details { flex: 1; min-width: 160px; }
+.my-role { font-size: 14px; color: var(--gray-dark); margin-bottom: 6px; }
+.my-role span { font-weight: 700; color: var(--green-dark); font-size: 15px; }
 .my-role span.werewolf { color: var(--red); }
-.all-numbers { font-size: 12px; color: var(--gray-dark); }
-.all-numbers-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.all-numbers-item { background: #ffeaea; border: 1px solid var(--red); border-radius: 6px; padding: 3px 8px; font-size: 12px; color: var(--red); font-weight: 700; }
-.hint-input-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
-.hint-input-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 10px; font-weight: 700; }
+#myNumberSmall { display: none; }
+.all-numbers { font-size: 12.5px; color: var(--gray-dark); font-weight: 700; letter-spacing: 0.5px; }
+.all-numbers-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.all-numbers-item { background: #f6e3d9; border: 1.5px solid var(--red); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--red); font-weight: 700; }
+
+.hint-input-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
+.hint-input-title { font-size: 13.5px; color: var(--gray-dark); margin-bottom: 12px; font-weight: 700; }
 .hint-input-row { display: flex; gap: 8px; }
-.hint-input-row input { flex: 1; }
-.answers-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
-.answers-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 12px; font-weight: 700; }
+.hint-input-row input { flex: 1; font-size: 15px; padding: 13px 16px; }
+
+/* みんなの回答：表ではなくカードの並びとして糸でつなぐ */
+.answers-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
+.answers-title { font-size: 13.5px; color: var(--gray-dark); margin-bottom: 14px; font-weight: 700; letter-spacing: 0.5px; }
 .answers-table { width: 100%; border-collapse: collapse; }
-.answers-table th { font-size: 12px; color: var(--gray-dark); padding: 6px 10px; text-align: left; border-bottom: 2px solid var(--green-pale); }
-.answers-table td { padding: 8px 10px; font-size: 15px; font-weight: 700; border-bottom: 1px solid var(--green-pale); }
+.answers-table thead, .answers-table tbody, .answers-table tr { display: block; width: 100%; }
+.answers-table tr { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 2px; }
+.answers-table th, .answers-table td {
+  display: flex; align-items: center; justify-content: center;
+  flex: 0 0 116px; width: 116px; text-align: center;
+  border: none; word-break: break-word;
+}
+.answers-table th {
+  font-size: 12.5px; color: var(--gray-dark); font-weight: 700; letter-spacing: 0.5px;
+  padding: 0 6px 8px; background: transparent;
+}
+.answers-table tbody tr { margin-top: -2px; }
+.answers-table td {
+  font-size: 19px; font-weight: 900; color: var(--green-dark);
+  min-height: 64px; padding: 10px 8px;
+  background: var(--green-pale); border-radius: 14px;
+  box-shadow: 0 3px 0 rgba(30,43,33,0.06);
+}
 .hint-pending { color: var(--gray-mid); font-style: italic; font-weight: 400; font-size: 13px; }
-.vote-card { background: white; border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
-.vote-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 12px; font-weight: 700; }
+
+.vote-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
+.vote-title { font-size: 13.5px; color: var(--gray-dark); margin-bottom: 14px; font-weight: 700; }
 .vote-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.vote-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 50px; }
-.vote-row select { flex: 1; }
-.vote-confirmed { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 12px; background: var(--green-pale); border-radius: 8px; }
-.vote-confirmed-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 50px; }
-.vote-confirmed-name { font-weight: 700; color: var(--green-mid); flex: 1; }
-.vote-confirmed-check { color: var(--green-accent); font-size: 18px; }
+.vote-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 54px; }
+.vote-row select { flex: 1; font-size: 14.5px; }
+.vote-confirmed { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; padding: 11px 14px; background: var(--green-pale); border-radius: 12px; }
+.vote-confirmed-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 54px; }
+.vote-confirmed-name { font-weight: 700; color: var(--green-mid); flex: 1; font-size: 15px; }
+.vote-confirmed-check { color: var(--green-accent); font-size: 19px; }
+
 .chat-panel { display: flex; flex-direction: column; }
-.chat-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; flex-direction: column; height: 500px; }
-.chat-title { padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--gray-dark); border-bottom: 1px solid var(--green-pale); }
+.chat-card { background: var(--white); border-radius: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 500px; overflow: hidden; }
+.chat-title { padding: 13px 16px; font-size: 13px; font-weight: 700; color: var(--gray-dark); border-bottom: 1px solid var(--green-pale); letter-spacing: 0.5px; }
 .chat-messages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.chat-msg { max-width: 85%; padding: 7px 12px; border-radius: 12px; font-size: 13px; word-break: break-all; }
-.chat-msg.mine { align-self: flex-end; background: #dcf8e6; }
+.chat-msg { max-width: 85%; padding: 8px 13px; border-radius: 14px; font-size: 13.5px; word-break: break-all; }
+.chat-msg.mine { align-self: flex-end; background: #e4efd8; }
 .chat-msg.theirs { align-self: flex-start; background: var(--green-pale); border: 1px solid var(--gray-mid); }
 .chat-msg .sender { font-size: 11px; color: var(--gray-dark); margin-bottom: 2px; font-weight: 700; }
 .chat-input-row { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--green-pale); }
-.chat-input-row input { flex: 1; font-size: 13px; }
-.chat-input-row button { padding: 8px 12px; font-size: 13px; }
-.phase-banner { background: linear-gradient(135deg, var(--green-mid), var(--green-accent)); color: white; border-radius: var(--radius); padding: 12px 20px; text-align: center; font-family: 'Zen Maru Gothic', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+.chat-input-row input { flex: 1; font-size: 13px; padding: 9px 12px; }
+.chat-input-row button { padding: 9px 14px; font-size: 13px; }
+.phase-banner { background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); color: var(--white); border-radius: 999px; padding: 12px 20px; text-align: center; font-family: 'Zen Maru Gothic', sans-serif; font-size: 15.5px; font-weight: 700; letter-spacing: 2px; margin-bottom: 6px; box-shadow: var(--shadow); }
 
 /* リザルト */
-#resultScreen { padding: 20px; max-width: 700px; margin: 0 auto; }
+#resultScreen { padding: 22px; max-width: 760px; margin: 0 auto; }
 #resultScreen.active { display: block !important; }
-.result-header { text-align: center; margin-bottom: 24px; }
-.result-label { font-size: 14px; color: var(--gray-dark); letter-spacing: 2px; margin-bottom: 8px; }
-.result-status { font-family: 'Zen Maru Gothic', sans-serif; font-size: 48px; font-weight: 900; }
-.result-status.success { color: var(--green-accent); }
+.result-header { text-align: center; margin-bottom: 26px; }
+.result-label { font-size: 13px; color: var(--gray-dark); letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; }
+.result-status { font-family: 'Zen Maru Gothic', sans-serif; font-size: 52px; font-weight: 900; }
+.result-status.success { color: var(--green-mid); }
 .result-status.fail { color: var(--red); }
-.result-order { background: white; border-radius: var(--radius); padding: 20px 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
-.result-order-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 14px; font-weight: 700; }
-.result-order-list { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.result-order-item { display: flex; flex-direction: column; align-items: center; background: var(--green-pale); border: 2px solid var(--green-mid); border-radius: var(--radius); padding: 10px 16px; min-width: 80px; }
-.result-order-item.wrong { background: #ffeaea; border-color: var(--red); }
-.result-order-hint { font-size: 18px; font-weight: 700; color: var(--green-dark); }
-.result-order-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; color: var(--green-accent); }
+.result-order { background: var(--white); border-radius: 20px; padding: 24px 26px; box-shadow: var(--shadow-lg); margin-bottom: 20px; }
+.result-order-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 16px; font-weight: 700; letter-spacing: 0.5px; }
+.result-order-list { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.result-order-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: var(--green-pale); border: 2px solid var(--green-accent); border-radius: 16px;
+  padding: 12px 18px; min-width: 88px; box-shadow: 0 3px 0 rgba(30,43,33,0.05);
+}
+.result-order-item.wrong { background: #f6e3d9; border-color: var(--red); }
+.result-order-hint { font-size: 16px; font-weight: 700; color: var(--green-dark); }
+.result-order-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; color: var(--green-accent); }
+.result-order-item.wrong .result-order-number { color: var(--red); }
 .result-order-name { font-size: 11px; color: var(--gray-dark); }
-.result-arrow { font-size: 20px; color: var(--gray-mid); }
+.result-arrow { font-size: 14px; color: var(--green-accent); opacity: 0.6; width: 18px; text-align: center; }
 .result-buttons { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.result-buttons button { flex: 1; min-width: 140px; padding: 12px; }
+.result-buttons button { flex: 1; min-width: 140px; padding: 13px; }
 
 /* 人狼投票 */
 #werewolfVoteScreen { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
 #werewolfVoteScreen.active { display: block !important; }
-.wv-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; color: var(--red); margin-bottom: 8px; }
-.wv-sub { color: var(--gray-dark); font-size: 14px; margin-bottom: 24px; }
+.wv-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; color: var(--red); margin-bottom: 8px; letter-spacing: 1px; }
+.wv-sub { color: var(--gray-dark); font-size: 13.5px; margin-bottom: 24px; }
 .wv-player-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-.wv-player-btn { padding: 16px; border-radius: var(--radius); background: white; border: 2px solid var(--gray-mid); color: var(--green-dark); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
-.wv-player-btn:hover { border-color: var(--red); background: #ffeaea; color: var(--red); }
-.wv-player-btn.selected { border-color: var(--red); background: var(--red); color: white; }
-.wv-submit-btn { width: 100%; padding: 14px; font-size: 16px; border-radius: 50px; background: var(--red); }
-.wv-submit-btn:hover { background: #c0392b; }
+.wv-player-btn { padding: 17px; border-radius: 16px; background: var(--white); border: 2px solid var(--gray-mid); color: var(--green-dark); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow); }
+.wv-player-btn:hover { border-color: var(--red); background: #f6e3d9; color: var(--red); }
+.wv-player-btn.selected { border-color: var(--red); background: var(--red); color: var(--white); }
+.wv-submit-btn { width: 100%; padding: 15px; font-size: 16px; border-radius: 999px; background: var(--red); }
+.wv-submit-btn:hover { background: #8f382d; }
 .wv-waiting { color: var(--gray-dark); font-size: 14px; margin-top: 16px; }
 
 /* 人狼勝敗 */
 #werewolfResultScreen { min-height: 100vh; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-.wr-bg-village { background: linear-gradient(160deg, var(--green-pale) 0%, #c8f0da 100%); }
-.wr-bg-wolf { background: linear-gradient(160deg, #1a0a0a 0%, #3d0f0f 100%); }
-.wr-winner { font-family: 'Zen Maru Gothic', sans-serif; font-size: 48px; font-weight: 900; margin-bottom: 8px; }
-.wr-winner.village { color: var(--green-accent); }
-.wr-winner.wolf { color: #ff6b6b; }
-.wr-sub { font-size: 16px; margin-bottom: 32px; }
-.wr-reveal-card { background: white; border-radius: var(--radius); padding: 24px 32px; box-shadow: var(--shadow); margin-bottom: 24px; min-width: 280px; }
-.wr-reveal-label { font-size: 13px; color: var(--gray-dark); margin-bottom: 8px; }
+.wr-bg-village { background: radial-gradient(circle at 50% 0%, #e4efd8 0%, var(--paper) 70%); }
+.wr-bg-wolf { background: radial-gradient(circle at 50% 0%, #4a2320 0%, #1c0f0d 70%); }
+.wr-winner { font-family: 'Zen Maru Gothic', sans-serif; font-size: 46px; font-weight: 900; margin-bottom: 8px; letter-spacing: 1px; }
+.wr-winner.village { color: var(--green-dark); }
+.wr-winner.wolf { color: #ff8a75; }
+.wr-sub { font-size: 15px; margin-bottom: 32px; color: var(--gray-dark); }
+.wr-reveal-card { background: var(--white); border-radius: 20px; padding: 26px 34px; box-shadow: var(--shadow-lg); margin-bottom: 24px; min-width: 280px; }
+.wr-reveal-label { font-size: 13px; color: var(--gray-dark); margin-bottom: 10px; font-weight: 700; letter-spacing: 1px; }
 .wr-werewolf-name { font-family: 'Zen Maru Gothic', sans-serif; font-size: 32px; font-weight: 900; color: var(--red); }
-.wr-vote-result { font-size: 14px; color: var(--gray-dark); margin-top: 8px; }
+.wr-vote-result { font-size: 13.5px; color: var(--gray-dark); margin-top: 10px; }
 .wr-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.wr-buttons button { min-width: 160px; padding: 12px 24px; font-size: 15px; }
+.wr-buttons button { min-width: 160px; padding: 13px 24px; font-size: 15px; }
 
 /* 人狼投票専用画面 */
 #werewolfVoteOnlyScreen { padding: 20px; max-width: 600px; margin: 0 auto; text-align: center; }
 #werewolfVoteOnlyScreen.active { display: block !important; }
 
 /* オーバーレイ */
-#overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+#overlay { display: none; position: fixed; inset: 0; background: rgba(20,26,20,0.6); z-index: 1000; align-items: center; justify-content: center; }
 #overlay.show { display: flex; }
-.overlay-box { background: white; border-radius: var(--radius); padding: 32px; text-align: center; min-width: 280px; max-width: 400px; box-shadow: 0 8px 40px rgba(0,0,0,0.3); }
-.overlay-box p { font-size: 18px; font-weight: 700; color: var(--green-dark); margin-bottom: 20px; }
+.overlay-box { background: var(--white); border-radius: 20px; padding: 32px; text-align: center; min-width: 280px; max-width: 400px; box-shadow: var(--shadow-lg); }
+.overlay-box p { font-size: 17px; font-weight: 700; color: var(--green-dark); margin-bottom: 20px; }
 .overlay-box button { min-width: 120px; }
+
+/* チャットなし設定時：ゲーム画面を1カラムに */
+.game-layout .chat-panel[hidden] { display: none; }
+
 @media (max-width: 600px) {
   .title-logo { font-size: 42px; letter-spacing: 4px; }
+  .my-number-badge { width: 96px; height: 96px; }
+  .my-number { font-size: 46px; }
+  .theme-text { font-size: 24px; }
 }
-  
 </style>
 </head>
 <body>
@@ -304,6 +388,13 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
           <input type="radio" name="gameCount" id="gc5" value="5"><label for="gc5">5回</label>
         </div>
       </div>
+      <div class="form-row">
+        <label>チャット</label>
+        <div class="radio-group">
+          <input type="radio" name="chatEnabled" id="chatOn" value="on" checked><label for="chatOn">あり</label>
+          <input type="radio" name="chatEnabled" id="chatOff" value="off"><label for="chatOff">なし</label>
+        </div>
+      </div>
     </div>
     <button class="start-btn" onclick="startRoom()">スタート</button>
   </div>
@@ -340,10 +431,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
         <div class="theme-text" id="themeText">-</div>
       </div>
       <div class="my-info-card">
-        <div class="my-number" id="myNumber">-</div>
+        <div class="my-number-badge"><div class="my-number" id="myNumber">-</div></div>
         <div class="my-info-details">
           <div class="my-role" id="myRoleRow">あなたの役職：<span id="myRole">村人</span></div>
-          <div class="my-role" style="margin-top:4px;">あなたの数字：<span style="font-weight:700; color:var(--green-accent);" id="myNumberSmall">-</span></div>
+          <div class="my-role" style="margin-top:4px; display:none;">あなたの数字：<span style="font-weight:700; color:var(--green-accent);" id="myNumberSmall">-</span></div>
           <div id="werewolfAllNumbers" style="display:none;">
             <div class="all-numbers">みんなの数字：</div>
             <div class="all-numbers-list" id="allNumbersList"></div>
@@ -423,7 +514,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); }
     <div class="wv-title">人狼投票</div>
     <div class="wv-sub">これまでのヒントを振り返って話し合い、人狼を投票してください</div>
 
-    <div style="display:grid; grid-template-columns:1fr 260px; gap:16px;">
+    <div class="game-layout">
       <div style="display:flex; flex-direction:column; gap:16px;">
 
         <!-- 話し合いタイマー -->
@@ -549,7 +640,13 @@ let wvTimerInterval = null;
 let wvHistoryPage = 0;
 let wvHistoryData = [];
 let joinAlertShown = false;
-let lastRoomKey = '';  
+let lastRoomKey = '';
+let chatEnabled = true;
+
+function applyChatVisibility() {
+  document.querySelectorAll('.chat-panel').forEach(el => { el.style.display = chatEnabled ? '' : 'none'; });
+  document.querySelectorAll('.game-layout').forEach(el => { el.classList.toggle('no-chat', !chatEnabled); });
+}
 
 function showItoRules() {
   document.getElementById('itoRuleScreen').style.display = 'block';
@@ -590,9 +687,10 @@ function startRoom() {
 function createRoom() {
   isHost = true;
   totalGameCount = parseInt(document.querySelector('input[name="gameCount"]:checked')?.value || 2);
+  chatEnabled = (document.querySelector('input[name="chatEnabled"]:checked')?.value || 'on') === 'on';
   window._set(window._ref(window._db, `ito_rooms/${roomKey}`), {
     mode: currentMode, totalGameCount, currentGameNumber: 1, phase: 'waiting',
-    host: myId, players: { [myId]: { name: myName } },
+    host: myId, players: { [myId]: { name: myName } }, chatEnabled,
     theme: '', numbers: {}, werewolf: '', hints: {}, votes: {},
     werewolfVotes: {}, chat: {}, gameResults: {}
   });
@@ -1468,6 +1566,9 @@ function listenToRoom() {
   roomUnsubscribe = window._onValue(window._ref(window._db, `ito_rooms/${roomKey}`), snap => {
     const data = snap.val();
     if (!data) return;
+
+    chatEnabled = data.chatEnabled !== false;
+    applyChatVisibility();
 
     if (data.disconnected) {
       const other = Object.keys(data.disconnected).find(id => id !== myId && data.disconnected[id]);

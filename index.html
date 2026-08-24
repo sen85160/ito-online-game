@@ -186,25 +186,33 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 .game-layout.no-chat { grid-template-columns: 1fr; }
 @media (max-width: 760px) { .game-layout { grid-template-columns: 1fr; } }
 .game-main { display: flex; flex-direction: column; gap: 16px; }
-.theme-card { position: relative; overflow: hidden; background: linear-gradient(135deg, var(--green-dark), var(--green-mid) 75%); color: var(--white); border-radius: 20px; padding: 22px 26px; box-shadow: var(--shadow-lg); }
-.theme-card::after { content: ''; position: absolute; right: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(198,149,60,0.35), transparent 70%); }
-.theme-label { font-size: 12px; opacity: 0.75; letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; }
-.theme-text { font-family: 'Zen Maru Gothic', sans-serif; font-size: 30px; font-weight: 900; letter-spacing: 1px; position: relative; }
 
-/* 自分の数字：大きな金糸バッジで最重要情報を強調 */
-.my-info-card { background: var(--white); border-radius: 20px; padding: 20px 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 24px; flex-wrap: wrap; border: 1px solid rgba(30,43,33,0.05); }
-.my-number-badge {
-  flex-shrink: 0; width: 120px; height: 120px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ecc06f, var(--green-accent) 65%, var(--thread-deep));
-  box-shadow: 0 10px 24px rgba(198,149,60,0.4), inset 0 2px 6px rgba(255,255,255,0.4);
-  display: flex; align-items: center; justify-content: center;
-  border: 4px solid var(--white); outline: 2px solid rgba(198,149,60,0.35);
+/* お題カード：本物のitoカードのように、お題と自分の数字を1枚にまとめる */
+.theme-card {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--green-dark), var(--green-mid) 75%);
+  color: var(--white); border-radius: 20px; padding: 20px 22px; box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
 }
-.my-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 60px; font-weight: 900; color: var(--white); line-height: 1; text-shadow: 0 2px 6px rgba(90,60,10,0.35); }
-.my-info-details { flex: 1; min-width: 160px; }
-.my-role { font-size: 14px; color: var(--gray-dark); margin-bottom: 6px; }
-.my-role span { font-weight: 700; color: var(--green-dark); font-size: 15px; }
-.my-role span.werewolf { color: var(--red); }
+.theme-card::after { content: ''; position: absolute; right: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(198,149,60,0.35), transparent 70%); }
+.theme-card-main { position: relative; min-width: 0; flex: 1; }
+.theme-label { font-size: 12px; opacity: 0.75; letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; }
+.theme-text { font-family: 'Zen Maru Gothic', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 1px; line-height: 1.3; word-break: break-word; }
+.my-role-inline { font-size: 12.5px; color: rgba(255,255,255,0.8); margin-top: 10px; font-weight: 700; }
+.my-role-inline span { font-weight: 900; color: var(--green-accent); }
+.my-role-inline span.werewolf { color: #ff9a85; }
+
+/* 自分の数字：本物のitoカードを模した木札タイル。お題カードの右上に収める */
+.my-number-tile {
+  position: relative; flex-shrink: 0; width: 84px;
+  background: linear-gradient(160deg, #fdf7e6, #ecdcae);
+  border-radius: 12px; padding: 8px 6px 10px;
+  box-shadow: 0 6px 16px rgba(20,15,0,0.3), inset 0 1px 0 rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.5);
+  text-align: center;
+}
+.my-number-tile-label { font-size: 9.5px; color: var(--thread-deep); font-weight: 700; letter-spacing: 1px; margin-bottom: 2px; }
+.my-number { font-family: 'Zen Maru Gothic', sans-serif; font-size: 38px; font-weight: 900; color: var(--green-dark); line-height: 1.05; }
 #myNumberSmall { display: none; }
 
 .hint-input-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
@@ -212,9 +220,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 .hint-input-row { display: flex; gap: 8px; }
 .hint-input-row input { flex: 1; font-size: 15px; padding: 13px 16px; }
 
-/* 人狼専用：みんなの数字カード */
-.werewolf-numbers-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); border: 1.5px dashed var(--red); }
-.werewolf-numbers-title { font-size: 13px; font-weight: 700; color: var(--red); margin-bottom: 12px; letter-spacing: 0.3px; }
+/* 人狼専用：みんなの数字カード（お題カードのすぐ下に配置） */
+.werewolf-numbers-card { background: var(--white); border-radius: 16px; padding: 14px 18px; box-shadow: var(--shadow); border: 1.5px dashed var(--red); }
+.werewolf-numbers-title { font-size: 12.5px; font-weight: 700; color: var(--red); margin-bottom: 10px; letter-spacing: 0.3px; }
 .all-numbers-list { display: flex; gap: 8px; flex-wrap: wrap; }
 .all-numbers-item { background: #f6e3d9; border: 1.5px solid var(--red); border-radius: 999px; padding: 6px 14px; font-size: 13.5px; color: var(--red); font-weight: 700; }
 
@@ -328,9 +336,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 
 @media (max-width: 600px) {
   .title-logo { font-size: 42px; letter-spacing: 4px; }
-  .my-number-badge { width: 96px; height: 96px; }
-  .my-number { font-size: 46px; }
-  .theme-text { font-size: 24px; }
+  .theme-card { padding: 16px; gap: 12px; }
+  .my-number-tile { width: 66px; padding: 6px 4px 8px; }
+  .my-number { font-size: 28px; }
+  .theme-text { font-size: 20px; }
 }
 </style>
 </head>
@@ -424,15 +433,21 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
   <div class="game-layout">
     <div class="game-main">
       <div class="theme-card">
-        <div class="theme-label">お題</div>
-        <div class="theme-text" id="themeText">-</div>
-      </div>
-      <div class="my-info-card">
-        <div class="my-number-badge"><div class="my-number" id="myNumber">-</div></div>
-        <div class="my-info-details">
-          <div class="my-role" id="myRoleRow">あなたの役職：<span id="myRole">村人</span></div>
-          <div class="my-role" style="margin-top:4px; display:none;">あなたの数字：<span style="font-weight:700; color:var(--green-accent);" id="myNumberSmall">-</span></div>
+        <div class="theme-card-main">
+          <div class="theme-label">お題</div>
+          <div class="theme-text" id="themeText">-</div>
+          <div class="my-role-inline" id="myRoleRow" style="display:none;">あなたの役職：<span id="myRole">村人</span></div>
         </div>
+        <div class="my-number-tile">
+          <div class="my-number-tile-label">あなたの数字</div>
+          <div class="my-number" id="myNumber">-</div>
+          <span id="myNumberSmall"></span>
+        </div>
+      </div>
+      <!-- 人狼専用：みんなの数字（お題カードのすぐ下に表示） -->
+      <div class="werewolf-numbers-card" id="werewolfNumbersCard" style="display:none;">
+        <div class="werewolf-numbers-title">🐺 みんなの数字（人狼のあなたにだけ見えています）</div>
+        <div class="all-numbers-list" id="allNumbersList"></div>
       </div>
       <div class="hint-input-card" id="hintInputCard">
         <div class="hint-input-title">あなたのヒントを入力してください</div>
@@ -440,11 +455,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
           <input id="hintInput" placeholder="ヒントを入力（例：ゴリラ）" maxlength="20">
           <button onclick="submitHint()">送信</button>
         </div>
-      </div>
-      <!-- 人狼専用：みんなの数字（投票UIがあった場所を活用） -->
-      <div class="werewolf-numbers-card" id="werewolfNumbersCard" style="display:none;">
-        <div class="werewolf-numbers-title">🐺 みんなの数字（人狼のあなたにだけ見えています）</div>
-        <div class="all-numbers-list" id="allNumbersList"></div>
       </div>
       <div class="answers-card">
         <div class="answers-title" id="answersTitle">みんなの回答</div>

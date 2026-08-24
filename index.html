@@ -206,48 +206,40 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 .my-role span { font-weight: 700; color: var(--green-dark); font-size: 15px; }
 .my-role span.werewolf { color: var(--red); }
 #myNumberSmall { display: none; }
-.all-numbers { font-size: 12.5px; color: var(--gray-dark); font-weight: 700; letter-spacing: 0.5px; }
-.all-numbers-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-.all-numbers-item { background: #f6e3d9; border: 1.5px solid var(--red); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--red); font-weight: 700; }
 
 .hint-input-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
 .hint-input-title { font-size: 13.5px; color: var(--gray-dark); margin-bottom: 12px; font-weight: 700; }
 .hint-input-row { display: flex; gap: 8px; }
 .hint-input-row input { flex: 1; font-size: 15px; padding: 13px 16px; }
 
-/* みんなの回答：表ではなくカードの並びとして糸でつなぐ */
+/* 人狼専用：みんなの数字カード */
+.werewolf-numbers-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); border: 1.5px dashed var(--red); }
+.werewolf-numbers-title { font-size: 13px; font-weight: 700; color: var(--red); margin-bottom: 12px; letter-spacing: 0.3px; }
+.all-numbers-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.all-numbers-item { background: #f6e3d9; border: 1.5px solid var(--red); border-radius: 999px; padding: 6px 14px; font-size: 13.5px; color: var(--red); font-weight: 700; }
+
+/* みんなの回答／並び替え：糸でつながるドラッグ可能カード列 */
 .answers-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
 .answers-title { font-size: 13.5px; color: var(--gray-dark); margin-bottom: 14px; font-weight: 700; letter-spacing: 0.5px; }
-.answers-table { width: 100%; border-collapse: collapse; }
-.answers-table thead, .answers-table tbody, .answers-table tr { display: block; width: 100%; }
-.answers-table tr { display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 2px; }
-.answers-table th, .answers-table td {
-  display: flex; align-items: center; justify-content: center;
-  flex: 0 0 116px; width: 116px; text-align: center;
-  border: none; word-break: break-word;
-}
-.answers-table th {
-  font-size: 12.5px; color: var(--gray-dark); font-weight: 700; letter-spacing: 0.5px;
-  padding: 0 6px 8px; background: transparent;
-}
-.answers-table tbody tr { margin-top: -2px; }
-.answers-table td {
-  font-size: 19px; font-weight: 900; color: var(--green-dark);
-  min-height: 64px; padding: 10px 8px;
-  background: var(--green-pale); border-radius: 14px;
+.order-scroll { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 6px 2px 10px; }
+.order-card {
+  flex: 0 0 118px; width: 118px; min-height: 92px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 10px; text-align: center; word-break: break-word;
+  background: var(--green-pale); border-radius: 16px; border: 2px solid transparent;
   box-shadow: 0 3px 0 rgba(30,43,33,0.06);
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  position: relative;
 }
+.order-card.draggable { border-color: var(--green-accent); cursor: grab; }
+.order-card.draggable::before {
+  content: '⠿'; position: absolute; top: 6px; right: 9px; font-size: 11px; color: var(--green-accent); opacity: 0.7;
+}
+.order-card.dragging { cursor: grabbing; box-shadow: var(--shadow-lg); background: var(--white); border-color: var(--thread-deep); }
+.order-card-hint { font-size: 18px; font-weight: 900; color: var(--green-dark); }
+.order-card-name { font-size: 11px; color: var(--gray-dark); font-weight: 700; }
+.order-arrow { flex: 0 0 auto; font-size: 15px; color: var(--green-accent); opacity: 0.55; }
 .hint-pending { color: var(--gray-mid); font-style: italic; font-weight: 400; font-size: 13px; }
-
-.vote-card { background: var(--white); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); }
-.vote-title { font-size: 13.5px; color: var(--gray-dark); margin-bottom: 14px; font-weight: 700; }
-.vote-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.vote-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 54px; }
-.vote-row select { flex: 1; font-size: 14.5px; }
-.vote-confirmed { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; padding: 11px 14px; background: var(--green-pale); border-radius: 12px; }
-.vote-confirmed-rank { font-size: 13px; font-weight: 700; color: var(--green-dark); min-width: 54px; }
-.vote-confirmed-name { font-weight: 700; color: var(--green-mid); flex: 1; font-size: 15px; }
-.vote-confirmed-check { color: var(--green-accent); font-size: 19px; }
 
 .chat-panel { display: flex; flex-direction: column; }
 .chat-card { background: var(--white); border-radius: 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 500px; overflow: hidden; }
@@ -322,9 +314,14 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 /* オーバーレイ */
 #overlay { display: none; position: fixed; inset: 0; background: rgba(20,26,20,0.6); z-index: 1000; align-items: center; justify-content: center; }
 #overlay.show { display: flex; }
-.overlay-box { background: var(--white); border-radius: 20px; padding: 32px; text-align: center; min-width: 280px; max-width: 400px; box-shadow: var(--shadow-lg); }
-.overlay-box p { font-size: 17px; font-weight: 700; color: var(--green-dark); margin-bottom: 20px; }
-.overlay-box button { min-width: 120px; }
+.overlay-box { position: relative; background: var(--white); border-radius: 20px; padding: 34px 32px 28px; text-align: center; min-width: 280px; max-width: 400px; box-shadow: var(--shadow-lg); }
+.overlay-box p { font-size: 16px; font-weight: 700; color: var(--green-dark); line-height: 1.7; white-space: pre-line; }
+.overlay-close {
+  position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; padding: 0;
+  border-radius: 50%; background: var(--green-pale); color: var(--green-dark);
+  font-size: 13px; font-weight: 900; box-shadow: none; line-height: 1;
+}
+.overlay-close:hover { background: var(--green-mid); color: var(--white); }
 
 /* チャットなし設定時：ゲーム画面を1カラムに */
 .game-layout .chat-panel[hidden] { display: none; }
@@ -435,10 +432,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
         <div class="my-info-details">
           <div class="my-role" id="myRoleRow">あなたの役職：<span id="myRole">村人</span></div>
           <div class="my-role" style="margin-top:4px; display:none;">あなたの数字：<span style="font-weight:700; color:var(--green-accent);" id="myNumberSmall">-</span></div>
-          <div id="werewolfAllNumbers" style="display:none;">
-            <div class="all-numbers">みんなの数字：</div>
-            <div class="all-numbers-list" id="allNumbersList"></div>
-          </div>
         </div>
       </div>
       <div class="hint-input-card" id="hintInputCard">
@@ -448,33 +441,16 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
           <button onclick="submitHint()">送信</button>
         </div>
       </div>
+      <!-- 人狼専用：みんなの数字（投票UIがあった場所を活用） -->
+      <div class="werewolf-numbers-card" id="werewolfNumbersCard" style="display:none;">
+        <div class="werewolf-numbers-title">🐺 みんなの数字（人狼のあなたにだけ見えています）</div>
+        <div class="all-numbers-list" id="allNumbersList"></div>
+      </div>
       <div class="answers-card">
-        <div class="answers-title">みんなの回答</div>
-        <table class="answers-table">
-          <thead><tr id="answersHeader"></tr></thead>
-          <tbody><tr id="answersRow"></tr></tbody>
-        </table>
-      </div>
-      <!-- 話し合い情報 -->
-      <div id="discussInfo" style="display:none; background:white; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow);">
-        <div style="font-size:13px; color:var(--gray-dark); font-weight:700; margin-bottom:8px;">話し合いフェーズ</div>
-        <div style="font-size:13px; color:var(--gray-dark); margin-bottom:8px;">投票は話し合い終了後に開始されます</div>
-        <div id="discussTimerDisplay" style="font-family:'Zen Maru Gothic',sans-serif; font-size:28px; font-weight:900; color:var(--green-accent); margin-bottom:12px;">1:30</div>
-        <button id="discussEndBtn" style="display:none; background:var(--red);" onclick="hostEndDiscuss()">話し合いを終了する</button>
-      </div>
-      <!-- 並び替え投票 -->
-      <div class="vote-card" id="voteCard" style="display:none;">
-        <div class="vote-title">並び替え投票（低い順に選んでください）</div>
-        <div id="voteRows"></div>
-        <div id="voteWaiting" style="display:none; color:var(--gray-dark); font-size:13px; padding:8px 0;"></div>
-      </div>
-      <!-- 同数解決UI -->
-      <div id="tiebreakCard" style="display:none; background:white; border-radius:var(--radius); padding:16px 20px; box-shadow:var(--shadow);">
-        <div style="font-size:13px; font-weight:700; color:var(--red); margin-bottom:8px;">⚠️ 同数が発生しました</div>
-        <div id="tiebreakInfo" style="font-size:13px; color:var(--gray-dark); margin-bottom:12px;"></div>
-        <div id="tiebreakSelects"></div>
-        <button id="tiebreakConfirmBtn" style="display:none; margin-top:12px; width:100%;" onclick="confirmTiebreak()">この順番で確定する</button>
-        <div id="tiebreakWaiting" style="display:none; font-size:13px; color:var(--gray-dark); margin-top:8px;">ホストが順番を決定中です...</div>
+        <div class="answers-title" id="answersTitle">みんなの回答</div>
+        <div class="order-scroll" id="cardOrderContainer"></div>
+        <div id="reorderHint" style="display:none; margin-top:12px; font-size:12.5px; color:var(--gray-dark); font-weight:700;"></div>
+        <button id="reorderConfirmBtn" style="display:none; margin-top:14px; width:100%;" onclick="confirmReorder()">この順番で結果を見る</button>
       </div>
     </div>
     <!-- チャット -->
@@ -586,8 +562,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 <!-- オーバーレイ -->
 <div id="overlay">
   <div class="overlay-box">
+    <button class="overlay-close" onclick="hideOverlay()">✕</button>
     <p id="overlayMsg">待機中...</p>
-    <button id="overlayBtn" style="display:none;" onclick="hideOverlay()">OK</button>
   </div>
 </div>
 
@@ -634,14 +610,20 @@ let players = {};
 let myNumber = 0, myRole = 'villager';
 let currentTheme = '', totalGameCount = 2, currentGameNumber = 1;
 let roomUnsubscribe = null, werewolfVoteTarget = null;
-let myVoteArray = [];
-let discussTimerInterval = null;
 let wvTimerInterval = null;
 let wvHistoryPage = 0;
 let wvHistoryData = [];
 let joinAlertShown = false;
 let lastRoomKey = '';
 let chatEnabled = true;
+let lastRoomData = null;
+
+// --- 並び替え（ドラッグ）関連の状態 ---
+let orderCardEls = {};      // playerId -> カードDOM要素（ラウンド中は使い回す）
+let liveOrderIds = [];      // 現在表示中の並び順
+let isDraggingLocally = false;
+let dragId = null;
+let reorderMsgShownForGame = null; // 並び替えフェーズの案内を表示済みのゲーム番号
 
 function applyChatVisibility() {
   document.querySelectorAll('.chat-panel').forEach(el => { el.style.display = chatEnabled ? '' : 'none'; });
@@ -657,6 +639,12 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('waitingOverlay').style.display = 'none';
+}
+
+// 中央に表示して✕で閉じるメッセージ（役職通知・フェーズ案内などに使用）
+function showCenterMessage(msg) {
+  document.getElementById('overlayMsg').textContent = msg;
+  document.getElementById('overlay').classList.add('show');
 }
 function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
 
@@ -691,7 +679,7 @@ function createRoom() {
   window._set(window._ref(window._db, `ito_rooms/${roomKey}`), {
     mode: currentMode, totalGameCount, currentGameNumber: 1, phase: 'waiting',
     host: myId, players: { [myId]: { name: myName } }, chatEnabled,
-    theme: '', numbers: {}, werewolf: '', hints: {}, votes: {},
+    theme: '', numbers: {}, werewolf: '', hints: {}, cardOrder: null,
     werewolfVotes: {}, chat: {}, gameResults: {}
   });
   showWaitingScreen(); listenToRoom();
@@ -733,7 +721,7 @@ function hostStartGame() {
     numbers: assignNumbers(Object.keys(players)),
     werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
     playerOrder: shuffleArray(Object.keys(players)),
-    hints: {}, votes: {}, currentGameNumber: 1, totalGameCount: tgc
+    hints: {}, cardOrder: null, currentGameNumber: 1, totalGameCount: tgc
   });
 }
 
@@ -777,8 +765,9 @@ function updateGameScreen(data) {
     document.getElementById('myRoleRow').style.display = 'none';
   }
 
+  const werewolfCard = document.getElementById('werewolfNumbersCard');
   if (myRole === 'werewolf' && data.numbers) {
-    document.getElementById('werewolfAllNumbers').style.display = 'block';
+    werewolfCard.style.display = 'block';
     const list = document.getElementById('allNumbersList');
     list.innerHTML = '';
     Object.entries(data.numbers).forEach(([id, num]) => {
@@ -790,11 +779,11 @@ function updateGameScreen(data) {
       }
     });
   } else {
-    document.getElementById('werewolfAllNumbers').style.display = 'none';
+    werewolfCard.style.display = 'none';
   }
 
   updatePhaseUI(data);
-  updateAnswersTable(data);
+  renderOrderArea(data);
   if (data.chat) updateChat(data.chat);
 }
 
@@ -803,58 +792,18 @@ function updatePhaseUI(data) {
   const playerIds = Object.keys(players);
 
   document.getElementById('hintInputCard').style.display = 'none';
-  document.getElementById('discussInfo').style.display = 'none';
-  document.getElementById('voteCard').style.display = 'none';
-  document.getElementById('tiebreakCard').style.display = 'none';
 
   if (data.phase === 'hint') {
     document.getElementById('phaseBanner').textContent = 'ヒント入力フェーズ';
     document.getElementById('phaseBadge').textContent = `${Object.keys(hints).length} / ${playerIds.length} 人入力済み`;
+    document.getElementById('answersTitle').textContent = 'みんなの回答';
     if (!hints[myId]) document.getElementById('hintInputCard').style.display = 'block';
-  } else if (data.phase === 'discuss') {
-    document.getElementById('phaseBanner').textContent = '話し合いフェーズ';
-    document.getElementById('phaseBadge').textContent = '';
-    document.getElementById('discussInfo').style.display = 'block';
-    document.getElementById('discussEndBtn').style.display = isHost ? 'inline-block' : 'none';
-  } else if (data.phase === 'vote') {
-    document.getElementById('phaseBanner').textContent = '並び替え投票フェーズ';
-    document.getElementById('voteCard').style.display = 'block';
-    if (!data.votes?.[myId] && !document.getElementById('voteSubmitBtn')) {
-      updateVoteUI(data);
-    } else if (data.votes?.[myId]) {
-      updateVoteUI(data);
-    }
-  } else if (data.phase === 'tiebreak_discuss') {
-    document.getElementById('phaseBanner').textContent = '⚠️ 同数発生 - 再話し合い';
-    document.getElementById('phaseBadge').textContent = 'ホストが決定します';
-    document.getElementById('tiebreakCard').style.display = 'block';
-    showTiebreakDiscuss(data);
+  } else if (data.phase === 'reorder') {
+    document.getElementById('phaseBanner').textContent = '並び替えフェーズ';
+    document.getElementById('phaseBadge').textContent = isHost ? 'あなたが並び替えます' : 'オーナーが並び替え中';
+    document.getElementById('answersTitle').textContent = '数字が小さいと思う順に並び替え中';
   }
 }
-
-function startDiscussTimer(startTime) {
-  if (discussTimerInterval) clearInterval(discussTimerInterval);
-  const DURATION = 90;
-  discussTimerInterval = setInterval(() => {
-    const remaining = DURATION - Math.floor((Date.now() - startTime) / 1000);
-    if (remaining <= 0) {
-      clearInterval(discussTimerInterval); discussTimerInterval = null;
-      if (isHost) window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'vote' });
-      return;
-    }
-    const m = Math.floor(remaining / 60), s = remaining % 60;
-    document.getElementById('discussTimerDisplay').textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  }, 1000);
-}
-
-function hostEndDiscuss() {
-  if (!isHost) return;
-  if (!confirm('話し合いを終了できるのはホストだけです。他のプレイヤーに確認を取ってください。本当に話し合いを終了して投票を開始しますか？')) return;
-  if (discussTimerInterval) { clearInterval(discussTimerInterval); discussTimerInterval = null; }
-  window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'vote' });
-}
-
-// 人狼投票前話し合いタイマー
 function startWvDiscussTimer(startTime) {
   if (wvTimerInterval) clearInterval(wvTimerInterval);
   const DURATION = 90;
@@ -885,87 +834,168 @@ function hostEndWvDiscuss() {
   window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'werewolf_vote_open' });
 }
 
-function updateAnswersTable(data) {
+function renderOrderArea(data) {
   const hints = data.hints || {};
-  const playerIds = data.playerOrder || Object.keys(players);
-  const header = document.getElementById('answersHeader');
-  const row = document.getElementById('answersRow');
-  header.innerHTML = ''; row.innerHTML = '';
-  playerIds.forEach(id => {
-    const th = document.createElement('th');
-    th.textContent = players[id]?.name || id;
-    header.appendChild(th);
-    const td = document.createElement('td');
-    td.textContent = hints[id] || '';
-    if (!hints[id]) td.innerHTML = '<span class="hint-pending">入力中...</span>';
-    row.appendChild(td);
+  const baseOrder = data.playerOrder || Object.keys(players);
+  const interactive = data.phase === 'reorder' && isHost;
+  const displayOrder = data.phase === 'reorder' ? (data.cardOrder || baseOrder) : baseOrder;
+
+  // プレイヤー構成が変わった（新しいラウンド開始など）場合はカード要素を作り直す
+  const knownIds = Object.keys(orderCardEls);
+  const sameSet = knownIds.length === baseOrder.length && baseOrder.every(id => orderCardEls[id]);
+  if (!sameSet) {
+    document.getElementById('cardOrderContainer').innerHTML = '';
+    orderCardEls = {};
+  }
+  ensureOrderCardElements(baseOrder, hints, interactive);
+
+  if (!isDraggingLocally) {
+    liveOrderIds = [...displayOrder];
+    applyCardOrder(liveOrderIds, true, null);
+  }
+
+  const reorderHint = document.getElementById('reorderHint');
+  const confirmBtn = document.getElementById('reorderConfirmBtn');
+  if (data.phase === 'reorder') {
+    reorderHint.style.display = 'block';
+    reorderHint.textContent = isHost
+      ? '話し合いながらカードをドラッグして並び替えてください（時間制限なし）'
+      : 'オーナーが並び替え中です。話し合いに参加しましょう。';
+    confirmBtn.style.display = isHost ? 'block' : 'none';
+  } else {
+    reorderHint.style.display = 'none';
+    confirmBtn.style.display = 'none';
+  }
+}
+
+function ensureOrderCardElements(ids, hints, interactive) {
+  const container = document.getElementById('cardOrderContainer');
+  ids.forEach(id => {
+    let card = orderCardEls[id];
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'order-card';
+      card.dataset.id = id;
+      const hintEl = document.createElement('div');
+      hintEl.className = 'order-card-hint';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'order-card-name';
+      nameEl.textContent = players[id]?.name || id;
+      card.appendChild(hintEl);
+      card.appendChild(nameEl);
+      container.appendChild(card);
+      orderCardEls[id] = card;
+    }
+    const hintEl = card.querySelector('.order-card-hint');
+    if (hints[id]) hintEl.textContent = hints[id];
+    else hintEl.innerHTML = '<span class="hint-pending">入力中...</span>';
+    card.classList.toggle('draggable', !!interactive);
+    if (interactive && !card.dataset.dragBound) {
+      attachCardDrag(card);
+      card.dataset.dragBound = '1';
+    }
   });
 }
 
-function updateVoteUI(data) {
-  const hints = data.hints || {};
-  const playerIds = data.playerOrder || Object.keys(players);
-  const myVoteData = data.votes?.[myId];
-  const voteRows = document.getElementById('voteRows');
-  const voteWaiting = document.getElementById('voteWaiting');
-
-  if (myVoteData) {
-    voteRows.innerHTML = '';
-    playerIds.forEach((id, i) => {
-      const name = myVoteData[i] || myVoteData[String(i)];
-      const confirmedId = playerIds.find(pid => players[pid]?.name === name);
-      const hint = hints[confirmedId] || name || '-';
-      const div = document.createElement('div');
-      div.className = 'vote-confirmed';
-      div.innerHTML = `<div class="vote-confirmed-rank">${i+1}番目</div><div class="vote-confirmed-name">${hint}（${name || '-'}）</div><div class="vote-confirmed-check">✓</div>`;
-      voteRows.appendChild(div);
+// FLIPアニメーションでカードの並び替えを滑らかに表示（drag中の自分のカードは対象外）
+function applyCardOrder(ids, animate, skipId) {
+  const prevRects = {};
+  if (animate) {
+    ids.forEach(id => {
+      if (id === skipId) return;
+      const el = orderCardEls[id];
+      if (el) prevRects[id] = el.getBoundingClientRect();
     });
-    voteWaiting.style.display = 'block';
-    const votedCount = Object.keys(data.votes || {}).length;
-    voteWaiting.textContent = `投票済み（${votedCount} / ${playerIds.length} 人）`;
-  } else {
-    if (document.getElementById('voteSubmitBtn')) return;
-    voteWaiting.style.display = 'none';
-    voteRows.innerHTML = '';
-    const selects = [];
-    playerIds.forEach((id, i) => {
-      const div = document.createElement('div');
-      div.className = 'vote-row';
-      const label = document.createElement('div');
-      label.className = 'vote-rank';
-      label.textContent = `${i+1}番目 →`;
-      const select = document.createElement('select');
-      select.id = `voteSelect_${i}`;
-      const def = document.createElement('option');
-      def.value = ''; def.textContent = '回答から選択';
-      select.appendChild(def);
-      playerIds.forEach(pid => {
-        const opt = document.createElement('option');
-        opt.value = players[pid]?.name || pid;
-        opt.textContent = `${hints[pid] || '?'}（${players[pid]?.name || pid}）`;
-        select.appendChild(opt);
-      });
-      selects.push(select);
-      div.appendChild(label); div.appendChild(select);
-      voteRows.appendChild(div);
-    });
-    const submitDiv = document.createElement('div');
-    submitDiv.style.cssText = 'margin-top:12px;';
-    const submitBtn = document.createElement('button');
-    submitBtn.id = 'voteSubmitBtn';
-    submitBtn.textContent = '投票する';
-    submitBtn.style.cssText = 'width:100%; padding:12px; font-size:15px;';
-    submitBtn.onclick = () => {
-      const voteArray = selects.map(s => s.value);
-      if (voteArray.some(v => !v)) { alert('すべての順位を選択してください'); return; }
-      if (new Set(voteArray).size !== voteArray.length) { alert('同じ回答を複数の順位に投票できません'); return; }
-      const voteObj = {};
-      voteArray.forEach((v, i) => { voteObj[i] = v; });
-      window._update(window._ref(window._db, `ito_rooms/${roomKey}/votes`), { [myId]: voteObj });
-    };
-    submitDiv.appendChild(submitBtn);
-    voteRows.appendChild(submitDiv);
   }
+  ids.forEach((id, i) => {
+    if (id === skipId) return;
+    const el = orderCardEls[id];
+    if (el) el.style.order = i;
+  });
+  if (animate) {
+    requestAnimationFrame(() => {
+      ids.forEach(id => {
+        if (id === skipId) return;
+        const el = orderCardEls[id];
+        const prev = prevRects[id];
+        if (!el || !prev) return;
+        const next = el.getBoundingClientRect();
+        const dx = prev.left - next.left;
+        if (Math.abs(dx) > 1) {
+          el.style.transition = 'none';
+          el.style.transform = `translateX(${dx}px)`;
+          requestAnimationFrame(() => {
+            el.style.transition = 'transform 0.25s ease';
+            el.style.transform = '';
+          });
+        }
+      });
+    });
+  }
+}
+
+function attachCardDrag(card) {
+  card.addEventListener('pointerdown', e => {
+    if (!isHost) return;
+    e.preventDefault();
+    const id = card.dataset.id;
+    dragId = id;
+    isDraggingLocally = true;
+    try { card.setPointerCapture(e.pointerId); } catch (err) {}
+    card.classList.add('dragging');
+    card.style.zIndex = 50;
+    card.style.transition = 'none';
+    const startX = e.clientX;
+
+    function onMove(ev) {
+      const dx = ev.clientX - startX;
+      card.style.transform = `translateX(${dx}px)`;
+      const rect = card.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const curIdx = liveOrderIds.indexOf(id);
+      for (let idx = 0; idx < liveOrderIds.length; idx++) {
+        const otherId = liveOrderIds[idx];
+        if (otherId === id) continue;
+        const otherEl = orderCardEls[otherId];
+        if (!otherEl) continue;
+        const oRect = otherEl.getBoundingClientRect();
+        const oCenter = oRect.left + oRect.width / 2;
+        if ((idx < curIdx && centerX < oCenter) || (idx > curIdx && centerX > oCenter)) {
+          liveOrderIds.splice(curIdx, 1);
+          liveOrderIds.splice(idx, 0, id);
+          applyCardOrder(liveOrderIds, true, id);
+          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { cardOrder: liveOrderIds });
+          break;
+        }
+      }
+    }
+    function onUp() {
+      card.removeEventListener('pointermove', onMove);
+      card.removeEventListener('pointerup', onUp);
+      try { card.releasePointerCapture(e.pointerId); } catch (err) {}
+      card.classList.remove('dragging');
+      card.style.zIndex = '';
+      card.style.transition = 'transform 0.2s ease';
+      card.style.transform = '';
+      applyCardOrder(liveOrderIds, false, null);
+      window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { cardOrder: liveOrderIds });
+      isDraggingLocally = false;
+      dragId = null;
+    }
+    card.addEventListener('pointermove', onMove);
+    card.addEventListener('pointerup', onUp);
+  });
+}
+
+function confirmReorder() {
+  if (!isHost || !lastRoomData) return;
+  const numbers = lastRoomData.numbers || {};
+  const order = liveOrderIds.length ? [...liveOrderIds] : (lastRoomData.cardOrder || lastRoomData.playerOrder || Object.keys(players));
+  const correctOrder = [...order].sort((a, b) => numbers[a] - numbers[b]);
+  const isSuccess = order.every((id, i) => id === correctOrder[i]);
+  window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+    phase: 'result', cardOrder: order, lastGameSuccess: isSuccess
+  });
 }
 
 function submitHint() {
@@ -1000,53 +1030,24 @@ function updateChat(chatData) {
 }
 
 function showResultScreen(data) {
-  const votes = data.votes || {};
-  const playerIds = data.playerOrder || Object.keys(players);
-
-  if (isHost) {
-    const tieRanks = findTieRanks(votes, playerIds);
-    if (tieRanks.length > 0) {
-      window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
-        phase: 'tiebreak_discuss', tieRanks, tieResolved: {}
-      });
-      return;
-    }
-  }
-
   showScreen('resultScreen');
   // itoモードはタイトルへ戻るを表示、人狼モードはゲーム終了まで非表示
-  const isLastGame = currentMode === 'werewolf' && currentGameNumber >= totalGameCount;
   document.getElementById('backToTitleBtn').style.display = currentMode === 'ito' ? 'inline-block' : 'none';
-  renderResult(data, determineFinalOrder(votes, playerIds));
+  const finalOrder = data.cardOrder || data.playerOrder || Object.keys(players);
+  renderResult(data, finalOrder);
 }
 
 function renderResult(data, finalOrder) {
-  const votes = data.votes || {};
   const numbers = data.numbers || {};
   const hints = data.hints || {};
-  const playerIds = data.playerOrder || Object.keys(players);
-  const correctOrder = [...playerIds].sort((a, b) => numbers[a] - numbers[b]);
+  const correctOrder = [...finalOrder].sort((a, b) => numbers[a] - numbers[b]);
   const isSuccess = finalOrder.every((id, i) => id === correctOrder[i]);
 
   document.getElementById('resultStatus').textContent = isSuccess ? '成功' : '失敗';
   document.getElementById('resultStatus').className = 'result-status ' + (isSuccess ? 'success' : 'fail');
 
-  const rankVoteCounts = {};
-  finalOrder.forEach((id, rank) => {
-    let count = 0;
-    Object.values(votes).forEach(voteObj => {
-      if (!voteObj) return;
-      const name = voteObj[rank] || voteObj[String(rank)];
-      if (!name) return;
-      const vid = playerIds.find(pid => players[pid]?.name === name);
-      if (vid === id) count++;
-    });
-    rankVoteCounts[id] = count;
-  });
-
   const orderList = document.getElementById('resultOrderList');
   orderList.innerHTML = '';
-  const totalVoters = Object.keys(votes).length;
 
   finalOrder.forEach((id, i) => {
     const isCorrect = id === correctOrder[i];
@@ -1056,7 +1057,6 @@ function renderResult(data, finalOrder) {
       <div class="result-order-hint">${hints[id] || '?'}</div>
       <div class="result-order-number">${numbers[id]}</div>
       <div class="result-order-name">${players[id]?.name || id}</div>
-      <div style="font-size:11px; color:var(--gray-dark); margin-top:2px;">${rankVoteCounts[id] || 0}/${totalVoters}票</div>
     `;
     orderList.appendChild(item);
     if (i < finalOrder.length - 1) {
@@ -1067,26 +1067,8 @@ function renderResult(data, finalOrder) {
     }
   });
 
-  const voteDetail = document.createElement('div');
-  voteDetail.style.cssText = 'margin-top:16px;';
-  voteDetail.innerHTML = '<div style="font-size:13px; color:var(--gray-dark); font-weight:700; margin-bottom:8px;">みんなの投票</div>';
-  Object.entries(votes).forEach(([voterId, voteObj]) => {
-    const voterName = players[voterId]?.name || voterId;
-    const voteStr = Object.keys(voteObj).sort((a,b)=>Number(a)-Number(b)).map((k) => {
-      const name = voteObj[k];
-      const id = playerIds.find(pid => players[pid]?.name === name);
-      const hint = hints[id] || '?';
-      return `${Number(k)+1}番目：${hint}(${name})`;
-    }).join('　');
-    const div = document.createElement('div');
-    div.style.cssText = 'font-size:13px; padding:6px 0; border-bottom:1px solid var(--green-pale);';
-    div.innerHTML = `<strong>${voterName}</strong>　${voteStr}`;
-    voteDetail.appendChild(div);
-  });
   const existingVoteDetail = document.getElementById('voteDetailSection');
   if (existingVoteDetail) existingVoteDetail.remove();
-  voteDetail.id = 'voteDetailSection';
-  document.querySelector('#resultScreen .result-order').appendChild(voteDetail);
 
   const isLastGame = currentMode === 'werewolf' && currentGameNumber >= totalGameCount;
   const nextBtn = document.getElementById('nextGameBtn');
@@ -1097,155 +1079,6 @@ function renderResult(data, finalOrder) {
   wvBtn.style.display = isLastGame ? 'inline-block' : 'none';
   wvBtn.disabled = false;
   wvBtn.textContent = '次へ';
-}
-
-function findTieRanks(votes, playerIds) {
-  const tieRanks = [];
-  const usedIds = new Set();
-  for (let rank = 0; rank < playerIds.length; rank++) {
-    const voteCounts = {};
-    playerIds.forEach(id => { voteCounts[id] = 0; });
-    Object.values(votes).forEach(voteObj => {
-      if (!voteObj) return;
-      const name = voteObj[rank] || voteObj[String(rank)];
-      if (!name) return;
-      const id = playerIds.find(pid => players[pid]?.name === name);
-      if (id && !usedIds.has(id)) voteCounts[id]++;
-    });
-    const available = playerIds.filter(id => !usedIds.has(id));
-    const maxVotes = Math.max(...available.map(id => voteCounts[id]));
-    const tied = available.filter(id => voteCounts[id] === maxVotes);
-    if (tied.length > 1) {
-      tieRanks.push({ rank, candidates: tied });
-    } else if (tied.length === 1) {
-      usedIds.add(tied[0]);
-    }
-  }
-  return tieRanks;
-}
-
-function showTiebreakDiscuss(data) {
-  const tieRanks = data.tieRanks || [];
-  const tieResolved = data.tieResolved || {};
-  const hints = data.hints || {};
-  const playerIds = data.playerOrder || Object.keys(players);
-
-  const infoDiv = document.getElementById('tiebreakInfo');
-  const selectsDiv = document.getElementById('tiebreakSelects');
-  const confirmBtn = document.getElementById('tiebreakConfirmBtn');
-  const waitingDiv = document.getElementById('tiebreakWaiting');
-
-  const rankNames = tieRanks.map(t => `${t.rank + 1}番目`).join('、');
-  infoDiv.textContent = `${rankNames}が同数です。チャットで話し合い、ホストが順番を決定してください。`;
-
-  if (isHost) {
-    confirmBtn.style.display = 'block';
-    waitingDiv.style.display = 'none';
-    selectsDiv.innerHTML = '';
-    tieRanks.forEach(({ rank, candidates }) => {
-      if (tieResolved[rank] !== undefined) return;
-      const label = document.createElement('div');
-      label.style.cssText = 'font-size:13px; font-weight:700; color:var(--green-dark); margin-bottom:6px; margin-top:12px;';
-      label.textContent = `${rank + 1}番目を選んでください`;
-      selectsDiv.appendChild(label);
-      const select = document.createElement('select');
-      select.id = `tiebreakSelect_${rank}`;
-      select.style.cssText = 'width:100%; margin-bottom:4px;';
-      const def = document.createElement('option');
-      def.value = ''; def.textContent = '選択してください';
-      select.appendChild(def);
-      candidates.forEach(id => {
-        const opt = document.createElement('option');
-        opt.value = id;
-        opt.textContent = `${hints[id] || '?'}（${players[id]?.name || id}）`;
-        select.appendChild(opt);
-      });
-      selectsDiv.appendChild(select);
-    });
-  } else {
-    confirmBtn.style.display = 'none';
-    waitingDiv.style.display = 'block';
-    selectsDiv.innerHTML = '';
-    Object.entries(tieResolved).forEach(([rank, id]) => {
-      const div = document.createElement('div');
-      div.style.cssText = 'font-size:13px; padding:6px 0; color:var(--green-dark);';
-      div.textContent = `${Number(rank)+1}番目：${hints[id] || '?'}（${players[id]?.name || id}）に決定`;
-      selectsDiv.appendChild(div);
-    });
-  }
-}
-
-function confirmTiebreak() {
-  if (!isHost) return;
-  window._get(window._ref(window._db, `ito_rooms/${roomKey}/tieRanks`)).then(snap => {
-    const tieRanks = snap.val() || [];
-    const tieResolved = {};
-    let valid = true;
-    tieRanks.forEach(({ rank }) => {
-      const select = document.getElementById(`tiebreakSelect_${rank}`);
-      if (!select || !select.value) { valid = false; return; }
-      tieResolved[rank] = select.value;
-    });
-    if (!valid) { alert('すべての同数順位を選択してください'); return; }
-    window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'tiebreak_result', tieResolved });
-  });
-}
-
-function showTiebreakResult(data) {
-  showScreen('resultScreen');
-  document.getElementById('backToTitleBtn').style.display = currentMode === 'ito' ? 'inline-block' : 'none';
-  const votes = data.votes || {};
-  const playerIds = data.playerOrder || Object.keys(players);
-  const tieResolved = data.tieResolved || {};
-  const finalOrder = determineFinalOrderWithTie(votes, playerIds, tieResolved);
-  renderResult(data, finalOrder);
-}
-
-function determineFinalOrder(votes, playerIds) {
-  const finalOrder = [];
-  const usedIds = new Set();
-  for (let rank = 0; rank < playerIds.length; rank++) {
-    const voteCounts = {};
-    playerIds.forEach(id => { voteCounts[id] = 0; });
-    Object.values(votes).forEach(voteObj => {
-      if (!voteObj) return;
-      const name = voteObj[rank] || voteObj[String(rank)];
-      if (!name) return;
-      const id = playerIds.find(pid => players[pid]?.name === name);
-      if (id && !usedIds.has(id)) voteCounts[id]++;
-    });
-    let maxVotes = -1, winner = null;
-    playerIds.forEach(id => {
-      if (!usedIds.has(id) && voteCounts[id] > maxVotes) { maxVotes = voteCounts[id]; winner = id; }
-    });
-    if (winner) { finalOrder.push(winner); usedIds.add(winner); }
-  }
-  return finalOrder;
-}
-
-function determineFinalOrderWithTie(votes, playerIds, tieResolved) {
-  const finalOrder = [];
-  const usedIds = new Set();
-  const resolved = {};
-  Object.entries(tieResolved).forEach(([rank, id]) => { resolved[Number(rank)] = id; });
-  for (let rank = 0; rank < playerIds.length; rank++) {
-    if (resolved[rank]) { finalOrder.push(resolved[rank]); usedIds.add(resolved[rank]); continue; }
-    const voteCounts = {};
-    playerIds.forEach(id => { voteCounts[id] = 0; });
-    Object.values(votes).forEach(voteObj => {
-      if (!voteObj) return;
-      const name = voteObj[rank] || voteObj[String(rank)];
-      if (!name) return;
-      const id = playerIds.find(pid => players[pid]?.name === name);
-      if (id && !usedIds.has(id)) voteCounts[id]++;
-    });
-    let maxVotes = -1, winner = null;
-    playerIds.forEach(id => {
-      if (!usedIds.has(id) && voteCounts[id] > maxVotes) { maxVotes = voteCounts[id]; winner = id; }
-    });
-    if (winner) { finalOrder.push(winner); usedIds.add(winner); }
-  }
-  return finalOrder;
 }
 
 function goNextGame() {
@@ -1281,11 +1114,10 @@ function proceedNextGame() {
       numbers: assignNumbers(Object.keys(players)),
       werewolf: d.werewolf,
       playerOrder: shuffleArray(Object.keys(players)),
-      hints: {}, votes: {}, chat: {}, nextGameReady: {},
+      hints: {}, cardOrder: null, chat: {}, nextGameReady: {},
       currentGameNumber: gameNum + 1
     });
   });
-  myVoteArray = [];
 }
 
 function goWerewolfVote() {
@@ -1566,6 +1398,7 @@ function listenToRoom() {
   roomUnsubscribe = window._onValue(window._ref(window._db, `ito_rooms/${roomKey}`), snap => {
     const data = snap.val();
     if (!data) return;
+    lastRoomData = data;
 
     chatEnabled = data.chatEnabled !== false;
     applyChatVisibility();
@@ -1583,64 +1416,45 @@ function listenToRoom() {
 
     if (data.phase === 'waiting') { updateWaitingScreen(data); return; }
 
-    if (data.phase === 'discuss') {
-      showScreen('gameScreen');
-      updateGameScreen(data);
-      startDiscussTimer(data.discussStartTime);
-      return;
-    }
-
-    if (data.phase === 'hint' || data.phase === 'vote') {
+    if (data.phase === 'hint') {
       showScreen('gameScreen');
       updateGameScreen(data);
       // 初回ゲーム開始時に接続メッセージを表示
-      if (data.phase === 'hint' && data.currentGameNumber === 1 && !joinAlertShown) {
+      if (data.currentGameNumber === 1 && !joinAlertShown) {
         joinAlertShown = true;
         lastRoomKey = roomKey;
         const werewolfId = data.werewolf;
         if (currentMode === 'werewolf') {
           if (werewolfId && werewolfId === myId) {
-            setTimeout(() => alert('接続しました。\nあなたは人狼です。他の人に配られた数字を見ることができます。自分が人狼だと悟られないようにitoを失敗させましょう。'), 500);
+            setTimeout(() => showCenterMessage('接続しました。\nあなたは人狼です。他の人に配られた数字を見ることができます。自分が人狼だと悟られないようにitoを失敗させましょう。'), 300);
           } else {
-            setTimeout(() => alert('接続しました。\nあなたは村人です。人狼を探しつつitoを成功させましょう。'), 500);
+            setTimeout(() => showCenterMessage('接続しました。\nあなたは村人です。人狼を探しつつitoを成功させましょう。'), 300);
           }
         } else {
-          setTimeout(() => alert('接続しました。\n協力してitoを成功させましょう！'), 500);
+          setTimeout(() => showCenterMessage('接続しました。\n協力してitoを成功させましょう！'), 300);
         }
       }
-      if (data.phase === 'hint' && isHost) {
+      if (isHost) {
         const pIds = Object.keys(players);
         const hints = data.hints || {};
         if (pIds.length > 0 && pIds.every(id => hints[id])) {
-          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'discuss', discussStartTime: Date.now() });
+          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
+            phase: 'reorder', cardOrder: data.playerOrder || pIds
+          });
         }
       }
-      if (data.phase === 'vote' && isHost) {
-        const pIds = Object.keys(players);
-        const votes = data.votes || {};
-if (pIds.length > 0 && pIds.every(id => votes[id])) {
-          // 成功/失敗を判定してFirebaseに記録
-          const numbers = data.numbers || {};
-          const playerOrder = data.playerOrder || pIds;
-          const correctOrder = [...playerOrder].sort((a, b) => numbers[a] - numbers[b]);
-          const finalOrder = [];
-          const usedIds = new Set();
-          for (let rank = 0; rank < playerOrder.length; rank++) {
-            const vc = {};
-            playerOrder.forEach(id => { vc[id] = 0; });
-            Object.values(votes).forEach(voteObj => {
-              if (!voteObj) return;
-              const name = voteObj[rank] || voteObj[String(rank)];
-              if (!name) return;
-              const id = playerOrder.find(pid => players[pid]?.name === name);
-              if (id && !usedIds.has(id)) vc[id]++;
-            });
-            let maxV = -1, winner = null;
-            playerOrder.forEach(id => { if (!usedIds.has(id) && vc[id] > maxV) { maxV = vc[id]; winner = id; } });
-            if (winner) { finalOrder.push(winner); usedIds.add(winner); }
-          }
-          const isSuccess = finalOrder.every((id, i) => id === correctOrder[i]);
-          window._update(window._ref(window._db, `ito_rooms/${roomKey}`), { phase: 'result', lastGameSuccess: isSuccess });
+      return;
+    }
+
+    if (data.phase === 'reorder') {
+      showScreen('gameScreen');
+      updateGameScreen(data);
+      if (reorderMsgShownForGame !== data.currentGameNumber) {
+        reorderMsgShownForGame = data.currentGameNumber;
+        if (isHost) {
+          showCenterMessage('【並び替えフェーズ】\nあなたはオーナーです。話し合って数字が小さいと思う順に並び替えてください。');
+        } else {
+          showCenterMessage('【並び替えフェーズ】\n数字が小さいと思う順に並び替えるために話し合いを行います。\n並び替えはオーナーが代表して行います。');
         }
       }
       return;
@@ -1678,8 +1492,6 @@ if (pIds.length > 0 && pIds.every(id => votes[id])) {
       }
       return;
     }
-    if (data.phase === 'tiebreak_discuss') { showScreen('gameScreen'); updateGameScreen(data); return; }
-    if (data.phase === 'tiebreak_result') { showTiebreakResult(data); return; }
 
     if (data.phase === 'werewolf_vote') {
       showWerewolfVoteScreen(data);
@@ -1731,9 +1543,9 @@ function updateWaitingScreen(data) {
 
 function backToTitle() {
   if (roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; }
-  myVoteArray = []; werewolfVoteTarget = null;
+  werewolfVoteTarget = null;
   if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
-  if (discussTimerInterval) { clearInterval(discussTimerInterval); discussTimerInterval = null; }
+  orderCardEls = {}; liveOrderIds = []; isDraggingLocally = false; dragId = null;
   showScreen('titleScreen');
 }
 
@@ -1742,14 +1554,13 @@ function playAgain() {
   
   // グローバル変数をリセット
   currentGameNumber = 1;
-  gameSuccessResults = {};
   wvHistoryData = [];
   wvHistoryPage = 0;
-  myVoteArray = [];
   werewolfVoteTarget = null;
+  orderCardEls = {}; liveOrderIds = []; isDraggingLocally = false; dragId = null;
+  reorderMsgShownForGame = null;
   
   // タイマーをクリア
-  if (discussTimerInterval) { clearInterval(discussTimerInterval); discussTimerInterval = null; }
   if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
   
   // DOMをクリア
@@ -1758,6 +1569,7 @@ function playAgain() {
   if (wvChatEl) wvChatEl.innerHTML = '';
   document.getElementById('chatInput').value = '';
   document.getElementById('hintInput').value = '';
+  document.getElementById('cardOrderContainer').innerHTML = '';
   
   // Firebaseをリセット
   window._update(window._ref(window._db, `ito_rooms/${roomKey}`), {
@@ -1768,19 +1580,16 @@ function playAgain() {
     werewolf: currentMode === 'werewolf' ? assignWerewolf(Object.keys(players)) : '',
     playerOrder: shuffleArray(Object.keys(players)),
     hints: {},
-    votes: {},
+    cardOrder: null,
     chat: {},
     werewolfVotes: {},
     wvChat: {},
     gameResults: {},
     lastGameSuccess: null,
-    discussStartTime: null,
     wvDiscussStartTime: null,
     villageWinWithoutVote: false,
     nextGameReady: {},
-    werewolfVoteReady: {},
-    tieRanks: null,
-    tieResolved: {}
+    werewolfVoteReady: {}
   });
 }
 

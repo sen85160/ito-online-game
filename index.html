@@ -267,12 +267,39 @@ input:focus, select:focus, textarea:focus { border-color: var(--green-mid); box-
 #resultScreen.active { display: block !important; }
 .result-header { text-align: center; margin-bottom: 26px; }
 .result-label { font-size: 13px; color: var(--gray-dark); letter-spacing: 3px; margin-bottom: 8px; font-weight: 700; }
-.result-status { font-family: 'Zen Maru Gothic', sans-serif; font-size: 52px; font-weight: 900; }
+.result-status { font-family: 'Zen Maru Gothic', sans-serif; font-size: 52px; font-weight: 900; transition: opacity 0.3s ease; }
 .result-status.success { color: var(--green-mid); }
 .result-status.fail { color: var(--red); }
+.result-status.pending { color: var(--gray-dark); font-size: 26px; letter-spacing: 6px; opacity: 0.75; }
 .result-order { background: var(--white); border-radius: 20px; padding: 24px 26px; box-shadow: var(--shadow-lg); margin-bottom: 20px; }
 .result-order-title { font-size: 13px; color: var(--gray-dark); margin-bottom: 16px; font-weight: 700; letter-spacing: 0.5px; }
 .result-order-list { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+
+/* めくりアニメーション：糸を手繰るように左から順に正体が明かされる */
+.result-order-item.flip-card {
+  position: relative; width: 104px; height: 118px; padding: 0;
+  background: transparent; border: none; box-shadow: none;
+  perspective: 900px; flex-shrink: 0;
+}
+.flip-card-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(.34,1.56,.64,1);
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 10px 8px; text-align: center; box-shadow: 0 3px 0 rgba(30,43,33,0.06);
+}
+.flip-card-back { background: linear-gradient(135deg, var(--green-dark), var(--green-mid)); }
+.flip-card-back .result-order-hint { color: var(--white); font-size: 15px; }
+.flip-card-back .result-order-name { color: rgba(255,255,255,0.65); }
+.flip-card-mark { font-family: 'Zen Maru Gothic', sans-serif; font-size: 24px; font-weight: 900; color: var(--green-accent); opacity: 0.85; }
+.flip-card-front { background: var(--green-pale); border: 2px solid var(--green-accent); transform: rotateY(180deg); }
+.flip-card-front.wrong { background: #f6e3d9; border-color: var(--red); }
+.flip-card-front.wrong .result-order-number { color: var(--red); }
+
 .result-order-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: var(--green-pale); border: 2px solid var(--green-accent); border-radius: 16px;
@@ -635,6 +662,8 @@ let liveOrderIds = [];      // 現在表示中の並び順
 let isDraggingLocally = false;
 let dragId = null;
 let reorderMsgShownForGame = null; // 並び替えフェーズの案内を表示済みのゲーム番号
+let resultAnimShownForGame = null; // めくりアニメーションを再生済みのゲーム番号
+let resultFlipTimers = [];
 
 function applyChatVisibility() {
   document.querySelectorAll('.chat-panel').forEach(el => { el.style.display = chatEnabled ? '' : 'none'; });
@@ -1045,17 +1074,29 @@ function showResultScreen(data) {
   // itoモードはタイトルへ戻るを表示、人狼モードはゲーム終了まで非表示
   document.getElementById('backToTitleBtn').style.display = currentMode === 'ito' ? 'inline-block' : 'none';
   const finalOrder = data.cardOrder || data.playerOrder || Object.keys(players);
-  renderResult(data, finalOrder);
+  const shouldAnimate = resultAnimShownForGame !== data.currentGameNumber;
+  resultAnimShownForGame = data.currentGameNumber;
+  renderResult(data, finalOrder, shouldAnimate);
 }
 
-function renderResult(data, finalOrder) {
+function renderResult(data, finalOrder, animate) {
   const numbers = data.numbers || {};
   const hints = data.hints || {};
   const correctOrder = [...finalOrder].sort((a, b) => numbers[a] - numbers[b]);
   const isSuccess = finalOrder.every((id, i) => id === correctOrder[i]);
 
-  document.getElementById('resultStatus').textContent = isSuccess ? '成功' : '失敗';
-  document.getElementById('resultStatus').className = 'result-status ' + (isSuccess ? 'success' : 'fail');
+  // 進行中のめくりタイマーが残っていればクリア（再描画時の重複防止）
+  resultFlipTimers.forEach(t => clearTimeout(t));
+  resultFlipTimers = [];
+
+  const statusEl = document.getElementById('resultStatus');
+  if (animate) {
+    statusEl.textContent = '判定中…';
+    statusEl.className = 'result-status pending';
+  } else {
+    statusEl.textContent = isSuccess ? '成功' : '失敗';
+    statusEl.className = 'result-status ' + (isSuccess ? 'success' : 'fail');
+  }
 
   const orderList = document.getElementById('resultOrderList');
   orderList.innerHTML = '';
@@ -1063,11 +1104,20 @@ function renderResult(data, finalOrder) {
   finalOrder.forEach((id, i) => {
     const isCorrect = id === correctOrder[i];
     const item = document.createElement('div');
-    item.className = 'result-order-item' + (isCorrect ? '' : ' wrong');
+    item.className = 'result-order-item flip-card' + (animate ? '' : ' flipped');
     item.innerHTML = `
-      <div class="result-order-hint">${hints[id] || '?'}</div>
-      <div class="result-order-number">${numbers[id]}</div>
-      <div class="result-order-name">${players[id]?.name || id}</div>
+      <div class="flip-card-inner">
+        <div class="flip-card-face flip-card-back">
+          <div class="result-order-hint">${hints[id] || '?'}</div>
+          <div class="flip-card-mark">？</div>
+          <div class="result-order-name">${players[id]?.name || id}</div>
+        </div>
+        <div class="flip-card-face flip-card-front${isCorrect ? '' : ' wrong'}">
+          <div class="result-order-hint">${hints[id] || '?'}</div>
+          <div class="result-order-number">${numbers[id]}</div>
+          <div class="result-order-name">${players[id]?.name || id}</div>
+        </div>
+      </div>
     `;
     orderList.appendChild(item);
     if (i < finalOrder.length - 1) {
@@ -1090,6 +1140,20 @@ function renderResult(data, finalOrder) {
   wvBtn.style.display = isLastGame ? 'inline-block' : 'none';
   wvBtn.disabled = false;
   wvBtn.textContent = '次へ';
+
+  if (animate) {
+    const cards = orderList.querySelectorAll('.flip-card');
+    const FLIP_INTERVAL = 2000; // 1枚ごとの間隔
+    cards.forEach((card, i) => {
+      const t = setTimeout(() => { card.classList.add('flipped'); }, 500 + i * FLIP_INTERVAL);
+      resultFlipTimers.push(t);
+    });
+    const finalT = setTimeout(() => {
+      statusEl.textContent = isSuccess ? '成功' : '失敗';
+      statusEl.className = 'result-status ' + (isSuccess ? 'success' : 'fail');
+    }, 500 + cards.length * FLIP_INTERVAL + 300);
+    resultFlipTimers.push(finalT);
+  }
 }
 
 function goNextGame() {
@@ -1557,6 +1621,8 @@ function backToTitle() {
   werewolfVoteTarget = null;
   if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }
   orderCardEls = {}; liveOrderIds = []; isDraggingLocally = false; dragId = null;
+  resultFlipTimers.forEach(t => clearTimeout(t)); resultFlipTimers = [];
+  resultAnimShownForGame = null;
   showScreen('titleScreen');
 }
 
@@ -1570,6 +1636,8 @@ function playAgain() {
   werewolfVoteTarget = null;
   orderCardEls = {}; liveOrderIds = []; isDraggingLocally = false; dragId = null;
   reorderMsgShownForGame = null;
+  resultFlipTimers.forEach(t => clearTimeout(t)); resultFlipTimers = [];
+  resultAnimShownForGame = null;
   
   // タイマーをクリア
   if (wvTimerInterval) { clearInterval(wvTimerInterval); wvTimerInterval = null; }

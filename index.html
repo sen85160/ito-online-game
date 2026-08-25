@@ -1143,7 +1143,7 @@ function renderResult(data, finalOrder, animate) {
 
   if (animate) {
     const cards = orderList.querySelectorAll('.flip-card');
-    const FLIP_INTERVAL = 2000; // 1枚ごとの間隔
+    const FLIP_INTERVAL = 1400; // 1枚ごとの間隔
     cards.forEach((card, i) => {
       const t = setTimeout(() => { card.classList.add('flipped'); }, 500 + i * FLIP_INTERVAL);
       resultFlipTimers.push(t);
